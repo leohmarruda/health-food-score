@@ -1,7 +1,7 @@
-import type { Food } from '@/types/food';
+import type { Food, FoodFormData } from '@/types/food';
 
 interface NutritionLabelProps {
-  data: Food;
+  data: Food | FoodFormData;
   usePortion?: boolean;
   multiplier?: number;
   onMultiplierChange?: (newMultiplier: number) => void;
