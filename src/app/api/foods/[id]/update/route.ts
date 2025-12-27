@@ -14,10 +14,25 @@ export async function PATCH(
       .from('foods')
       .update({
         name: body.name,
-        calories: body.calories,
-        protein: body.protein,
-        health_score: body.health_score,
-        ingredients: body.ingredients // Assuming this is a comma-separated string or array
+        brand: body.brand,
+        category: body.category,
+        hfs: body.hfs,
+        energy_kcal: body.energy_kcal,
+        protein_g: body.protein_g,
+        carbs_total_g: body.carbs_total_g,
+        fat_total_g: body.fat_total_g,
+        sodium_mg: body.sodium_mg,
+        fiber_g: body.fiber_g,
+        saturated_fat_g: body.saturated_fat_g,
+        trans_fat_g: body.trans_fat_g,
+        portion_size_value: body.portion_size_value,
+        portion_unit: body.portion_unit,
+        ingredients_list: body.ingredients_list, 
+        ingredients_raw: body.ingredients_raw, 
+        nutrition_raw: body.nutrition_raw, 
+        declared_special_nutrients: body.declared_special_nutrients, 
+        declared_processes: body.declared_processes,
+        last_update: body.last_update        
       })
       .eq('id', id);
 

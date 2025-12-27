@@ -28,7 +28,7 @@ export default function Navbar() {
     },
     { 
       name: dict?.common?.addFood || 'Add Food', 
-      href: `/${lang}/add-food` 
+      href: `/${lang}/new-food` 
     },
     { 
       name: dict?.common?.manage || 'Manage', 

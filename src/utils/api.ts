@@ -8,3 +8,14 @@ export const processImages = async (imageUrls: string[], mode: 'full-scan' | 're
     if (!response.ok) throw new Error("Processing failed");
     return response.json();
   };
+
+  export const deleteFoodRecord = async (id: string) => {
+    const res = await fetch(`/api/foods/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to delete');
+    }
+    return true;
+  };

@@ -1,15 +1,17 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import FoodProfileModal from '@/components/FoodProfileModal';
 import FoodTable from '@/components/FoodTable';
+import FoodCard from '@/components/FoodCard'; // Importe o componente novo
 import { downloadAsCSV } from '@/utils/export';
 import type { Food } from '@/types/food';
 
 type ViewMode = 'grid' | 'table';
+type SortKey = 'name' | 'energy_kcal' | 'protein_g' | 'hfs';
+type SortOrder = 'asc' | 'desc';
 
-// Adicione o tipo do dicionário nas props
 export default function HomeClient({ dict, lang }: { dict: any, lang: string }) {
   const [foods, setFoods] = useState<Food[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +19,10 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; order: SortOrder }>({
+    key: 'hfs',
+    order: 'desc'
+  });
 
   // Use o dicionário para os textos da interface
   const t = dict.home || { 
@@ -48,6 +54,31 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
     }
     fetchFoods();
   }, []);
+
+  // Lógica de Filtragem e Ordenação Combinada
+  const processedFoods = useMemo(() => {
+    // 1. Filtrar
+    const filtered = foods.filter((food) =>
+      food.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // 2. Ordenar
+    return [...filtered].sort((a, b) => {
+      const aValue = a[sortConfig.key] ?? 0;
+      const bValue = b[sortConfig.key] ?? 0;
+
+      if (aValue < bValue) return sortConfig.order === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.order === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [foods, searchTerm, sortConfig]);
+
+  const toggleSort = (key: SortKey) => {
+    setSortConfig((prev) => ({
+      key,
+      order: prev.key === key && prev.order === 'desc' ? 'asc' : 'desc'
+    }));
+  };
 
   const filteredFoods = foods.filter((food) =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -88,7 +119,7 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
         <div className="text-center py-20 text-text-main/70 bg-card rounded-theme border border-text-main/20 border-dashed">
           <p className="text-lg font-medium">{t.noFoods} {searchTerm && `"${searchTerm}"`}</p>
           {!searchTerm && (
-            <Link href={`/${lang}/add-food`} className="text-primary hover:underline mt-2 inline-block">
+            <Link href={`/${lang}/new-food`} className="text-primary hover:underline mt-2 inline-block">
               {t.addFirst} →
             </Link>
           )}
@@ -127,37 +158,20 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
           {/* Grid Mode */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredFoods.map((food) => (
-                <div 
-                  key={food.id} 
-                  onClick={() => handleFoodClick(food)}
-                  className="border border-text-main/20 rounded-theme overflow-hidden shadow-sm hover:shadow-lg transition-all bg-card cursor-pointer transform hover:-translate-y-1"
-                >
-                                    <div className="relative h-48 bg-text-main/5">
-                    {food.front_photo_url ? (
-                      <img 
-                        src={food.front_photo_url} 
-                        alt={food.name} 
-                        className="h-full w-full object-cover" 
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-text-main/40">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg text-text-main mb-1">{food.name}</h3>
-                    <div className="flex justify-between text-sm text-text-main/70">
-                      <span>🔥 {food.energy_kcal || 0} kcal</span>
-                      <span>💪 {food.protein_g || 0}g {t.protein}</span>
-                    </div>
-                  </div>
+              {processedFoods.map((food) => (
+                <div key={food.id} onClick={() => handleFoodClick(food)}>
+                  <FoodCard food={food as any} dict={dict} />
                 </div>
               ))}
             </div>
           ) : (
-            <FoodTable foods={filteredFoods} onFoodClick={handleFoodClick} dict={dict} />
+            <FoodTable 
+              foods={processedFoods} 
+              onFoodClick={handleFoodClick} 
+              dict={dict}
+              sortConfig={sortConfig}
+              onSort={toggleSort}
+            />
           )}
         </>
       )}

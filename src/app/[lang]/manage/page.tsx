@@ -1,5 +1,4 @@
 'use client';
-import React from 'react'; // Importação explícita do React
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
@@ -54,14 +53,13 @@ export default function ManageFoods() {
     setIsModalOpen(true);
   };
 
-  const t = dict?.manage || {};
-
   async function handleDelete(id: string) {
     if (!confirm(t.confirmDelete || "Are you sure?")) return;
 
     try {
       const res = await fetch(`/api/foods/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        // Remove do estado local para feedback instantâneo
         setFoods(foods.filter(f => f.id !== id));
       } else {
         const error = await res.json();
@@ -72,6 +70,8 @@ export default function ManageFoods() {
       alert(error.message || 'Failed to delete entry');
     }
   }
+  
+  const t = dict?.manage || {};
 
   return (
     <div className="max-w-4xl mx-auto p-8">

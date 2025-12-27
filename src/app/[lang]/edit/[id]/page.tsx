@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import NutritionLabel from '@/components/NutritionLabel';
-import { processImages } from '@/utils/api';
+import { processImages, deleteFoodRecord } from '@/utils/api';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Food, FoodFormData } from '@/types/food';
+import { checkInput, calculateHFS } from '@/utils/hfs';
 
 export default function EditFood() {
   const { id, lang } = useParams();
@@ -29,9 +30,11 @@ export default function EditFood() {
     trans_fat_g: 0,
     portion_size_value: 0,
     portion_unit: 'g',
+    ingredients_list: [],
     ingredients_raw: '',
     nutrition_raw: '',
     declared_special_nutrients: '',
+    declared_processes: '',
     last_update: ''
   });
 
@@ -45,15 +48,23 @@ export default function EditFood() {
         getDictionary(lang as 'pt' | 'en'),
         supabase.from('foods').select('*').eq('id', id).single()
       ]);
-
+  
       setDict(d);
-
+  
       if (data) {
+        // 1. Processamos todos os dados primeiro
         const cleanData = Object.keys(data).reduce((acc: any, key) => {
-          acc[key] = data[key] === null ? "" : data[key];
+          if (key === 'ingredients_list') {
+            acc[key] = data[key] || [];
+          } else {
+            acc[key] = data[key] === null ? "" : data[key];
+          }
           return acc;
         }, {}) as FoodFormData;
+  
+        // 2. Atualizamos os estados uma única vez após o reduce
         setFormData(cleanData);
+        
         setImages({
           front: data.front_photo_url,
           nutrition: data.nutrition_label_url,
@@ -119,40 +130,130 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   };
 
+  // Função para buscar os dados mais recentes do servidor
+  const fetchLatestData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('foods')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const cleanData = Object.keys(data).reduce((acc: any, key) => {
+          if (key === 'ingredients_list') {
+            acc[key] = data[key] || [];
+          } else {
+            acc[key] = data[key] === null ? "" : data[key];
+          }
+          return acc;
+        }, {}) as FoodFormData;
+
+        setFormData(cleanData);
+        setImages({
+          front: data.front_photo_url,
+          nutrition: data.nutrition_label_url,
+          ingredients: data.ingredients_photo_url,
+          back: data.back_photo_url
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao sincronizar dados:", err);
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+  
     try {
-      const payload = { ...formData, last_update: new Date().toISOString() };
+      const cleanIngredientsList = Array.isArray(formData.ingredients_list) 
+        ? formData.ingredients_list.map(i => i.trim()).filter(Boolean)
+        : [];
+  
+      const hfs_response = checkInput(formData) ? await calculateHFS(formData) : {hfs_score: -1.0};
+  
+      // 1. Criamos o payload
+      const payload = { 
+        ...formData, 
+        hfs: hfs_response.hfs_score,
+        ingredients_list: cleanIngredientsList,
+        last_update: new Date().toISOString() 
+      };
+  
+      // 2. Definimos quais campos devem ser tratados como números
+      const numericFields: (keyof FoodFormData)[] = [
+        'energy_kcal', 'protein_g', 'carbs_total_g', 'fat_total_g', 
+        'sodium_mg', 'fiber_g', 'saturated_fat_g', 'trans_fat_g', 
+        'portion_size_value'
+      ];
+  
+      const sanitizedPayload = { ...payload } as Record<string, any>;
+      numericFields.forEach(field => {
+        const value = sanitizedPayload[field];
+        
+        // Se for string vazia, null ou undefined, vira 0. Caso contrário, vira Number.
+        if (value === "" || value === null || value === undefined) {
+          sanitizedPayload[field] = 0; 
+        } else {
+          sanitizedPayload[field] = Number(value);
+        }
+      });
+  
       const res = await fetch(`/api/foods/${id}/update`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+  
       if (!res.ok) throw new Error();
-      router.push(`/${lang}/manage`);
-      router.refresh();
+  
+      // 4. Recupera o estado atualizado do servidor
+      await fetchLatestData();
+      alert(dict?.edit?.saveSuccess || 'Salvo com sucesso!');
+  
     } catch (error) {
       alert(dict?.edit?.saveError || 'Error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDelete = async () => {
+    if (!confirm(dict?.edit?.confirmDelete)) return;
+    
+    try {
+      setLoading(true);
+      await deleteFoodRecord(id as string);
+      router.push(`/${lang}/manage`);
+      router.refresh();
+    } catch (err) {
+      alert("Erro ao deletar");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading || !dict) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-      <p className="text-text-main/70 font-medium">Loading...</p>
-    </div>
-  );
+  const checkInput = (data: FoodFormData): boolean => {
+    // Validação básica: Exemplo de verificar se nome e marca existem
+    if (!data.name.trim()) {
+      alert("Nome e Marca são obrigatórios.");
+      return false;
+    }
+    return true;
+  };
 
   if (loading || !dict || !dict.edit) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
-  
-  const t = dict.edit; // Agora é seguro pois o if acima garantiu a existência
+
+  const t = dict.edit;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -276,11 +377,136 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </div>
                 ))}
               </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: dict.home.portion || 'Portion', key: 'portion_size_value' },
+                  { label: dict.home.unit, key: 'portion_unit' },
+                  { label: dict.nutrition.calories, key: 'energy_kcal' },
+                  // ... outros campos ...
+                  { label: 'HFS Score', key: 'hfs' }, // Novo campo aqui
+                ].map((field) => (
+                  <div key={field.key}>
+                    <label className="block text-xs font-bold text-text-main/70">{field.label}</label>
+                    <input 
+                      type={field.key === 'portion_unit' ? 'text' : 'number'} 
+                      step="0.1" 
+                      value={formData[field.key as keyof FoodFormData] as any} 
+                      onChange={e => setFormData({...formData, [field.key]: e.target.value})} 
+                      className="w-full bg-background border border-text-main/20 text-text-main p-2 rounded-theme" 
+                    />
+                  </div>
+                ))}
+              </div>
             </section>
 
-            <div className="flex gap-4 border-t border-text-main/10 pt-8">
-              <button type="button" onClick={() => router.back()} className="px-6 py-3 border border-text-main/20 rounded-theme font-medium text-text-main hover:bg-text-main/5 transition">{t.btnCancel}</button>
-              <button type="submit" className="flex-1 bg-primary text-white py-3 rounded-theme font-bold hover:opacity-90 shadow-md">{t.btnSave}</button>
+            {/* SECTION 3: RAW DATA & SPECIAL INFO */}
+            <section className="pt-4">
+              <h3 className="text-lg font-bold mb-4 text-primary">3. {t.sectionExtra || 'Dados Extraídos & Processamento'}</h3>
+              <div className="space-y-4">
+                
+                {/* Ingredients Raw */}
+                <div>
+                  <label className="block text-sm font-medium text-text-main mb-1">{t.labelIngredientsRaw || 'Lista de Ingredientes (Bruto)'}</label>
+                  <textarea 
+                    rows={3}
+                    value={formData.ingredients_raw || ''} 
+                    onChange={e => setFormData({...formData, ingredients_raw: e.target.value})} 
+                    className="w-full bg-background border border-text-main/20 text-text-main p-3 rounded-theme text-sm"
+                    placeholder="..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-main mb-1">
+                    {t.labelIngredientsList || 'Lista de Ingredientes processada'}
+                  </label>
+                  <textarea 
+                    rows={4}
+                    value={Array.isArray(formData.ingredients_list) ? formData.ingredients_list.join(', ') : ''} 
+                    onChange={e => {
+                      const text = e.target.value;
+                      const array = text.split(',')
+                        .map(item => item.trim())
+                        .filter(item => item !== '');                      
+                      setFormData({...formData, ingredients_list: array});
+                    }}
+                    className="w-full bg-background border border-text-main/20 text-text-main p-3 rounded-theme text-sm"
+                    placeholder={t.placeholderIngredientList || "Ingrediente 1, Ingrediente 2, Ingrediente 3..."}
+                  />
+                  <p className="text-[10px] text-text-main/50 mt-1 uppercase">
+                  {t.warningIngredientsCommas || 'Separe os ingredientes por vírgula'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nutrition Raw */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-main mb-1">{t.labelNutritionRaw || 'Tabela Nutricional (Bruto)'}</label>
+                    <textarea 
+                      rows={3}
+                      value={formData.nutrition_raw || ''} 
+                      onChange={e => setFormData({...formData, nutrition_raw: e.target.value})} 
+                      className="w-full bg-background border border-text-main/20 text-text-main p-3 rounded-theme text-sm"
+                    />
+                  </div>
+
+                  {/* Special Nutrients */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-main mb-1">{t.labelSpecialNutrients || 'Nutrientes Especiais Declarados'}</label>
+                    <textarea 
+                      rows={3}
+                      value={formData.declared_special_nutrients || ''} 
+                      onChange={e => setFormData({...formData, declared_special_nutrients: e.target.value})} 
+                      className="w-full bg-background border border-text-main/20 text-text-main p-3 rounded-theme text-sm"
+                      placeholder={t.placeholderSpecialNutrients || "E.g. Vitamins, minerals..."}
+                    />
+                  </div>
+                </div>
+
+                {/* Declared Processes */}
+                <div>
+                  <label className="block text-sm font-medium text-text-main mb-1">{t.labelProcesses || 'Processos Declarados (Ex: Pasteurizado, Defumado)'}</label>
+                  <input 
+                    type="text"
+                    value={formData.declared_processes || ''} 
+                    onChange={e => setFormData({...formData, declared_processes: e.target.value})} 
+                    className="w-full bg-background border border-text-main/20 text-text-main p-3 rounded-theme text-sm"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <div className="flex flex-col gap-4 border-t border-text-main/10 pt-8">
+              <div className="flex gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => router.back()} 
+                  className="px-6 py-3 border border-text-main/20 rounded-theme font-medium text-text-main hover:bg-text-main/5 transition"
+                >
+                  {t.btnCancel}
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-primary text-white py-3 rounded-theme font-bold hover:opacity-90 shadow-md transition"
+                >
+                  {t.btnSave}
+                </button>
+              </div>
+
+              {/* BOTÃO DE DELETAR */}
+              <div className="pt-4">
+                <button 
+                  type="button" 
+                  onClick={handleDelete}
+                  className="w-full py-3 px-4 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-theme font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🗑️</span>
+                  {dict?.edit?.btnDelete || 'Deletar Registro Permanentemente'}
+                </button>
+                <p className="text-[10px] text-center text-text-main/40 mt-2 uppercase tracking-widest">
+                  Esta ação não pode ser desfeita
+                </p>
+              </div>
             </div>
           </form>
         </div>

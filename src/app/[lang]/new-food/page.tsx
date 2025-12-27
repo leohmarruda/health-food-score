@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { processImages } from '@/utils/api';
 import { getDictionary } from '@/lib/get-dictionary';
 
-export default function AddFood() {
+export default function NewFood() {
   const [files, setFiles] = useState<{ [key: string]: File | null }>({});
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -36,7 +36,7 @@ export default function AddFood() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setStatus('Uploading images...');
+    setStatus(dict?.addFood?.statusUpload || 'Uploading images...');
     
     try {
       const urls: { [key: string]: string | null } = {};
@@ -58,34 +58,44 @@ export default function AddFood() {
       setStatus(dict?.addFood?.statusAI || 'AI is extracting data...');
       const aiData = await processImages(Object.values(urls).filter(Boolean) as string[], 'full-scan');
 
-      // 3. SAVE TO DATABASE (Original Values)
+      // 3. SAVE TO DATABASE & GET ID
       setStatus(dict?.addFood?.statusSave || 'Saving to database...');
-      const { error: dbError } = await supabase.from('foods').insert([{
-        name: aiData.product_name,
-        brand: aiData.brand,
-        ingredients_raw: aiData.ingredients_raw,
-        nutrition_raw: aiData.nutrition_raw,
-        declared_special_nutrients: aiData.declared_special_nutrients, // New field!
-        portion_size_value: parseFloat(aiData.portion_size_value) || 100,
-        portion_unit: aiData.portion_unit || 'g',
-        
-        // Store values exactly as they appear on the label
-        energy_kcal: parseFloat(aiData.energy_kcal) || 0,
-        protein_g: parseFloat(aiData.protein_g) || 0,
-        carbs_total_g: parseFloat(aiData.carbs_total_g) || 0,
-        fat_total_g: parseFloat(aiData.fat_total_g) || 0,
-        sodium_mg: parseFloat(aiData.sodium_mg) || 0,
-        
-        // Photos mapping
-        front_photo_url: urls.front_photo_url, 
-        back_photo_url: urls.back_photo_url,
-        nutrition_label_url: urls.nutrition_label_url,
-        ingredients_photo_url: urls.ingredients_photo_url,
-      }]);
+      
+      // MUDANÇA AQUI: Adicionamos .select().single() para pegar o ID do novo registro
+      const { data: newFood, error: dbError } = await supabase
+        .from('foods')
+        .insert([{
+          name: aiData.product_name,
+          brand: aiData.brand,
+          ingredients_raw: aiData.ingredients_raw,
+          nutrition_raw: aiData.nutrition_raw,
+          declared_special_nutrients: aiData.declared_special_nutrients,
+          portion_size_value: parseFloat(aiData.portion_size_value) || 100,
+          portion_unit: aiData.portion_unit || 'g',
+          energy_kcal: parseFloat(aiData.energy_kcal) || 0,
+          protein_g: parseFloat(aiData.protein_g) || 0,
+          carbs_total_g: parseFloat(aiData.carbs_total_g) || 0,
+          fat_total_g: parseFloat(aiData.fat_total_g) || 0,
+          sodium_mg: parseFloat(aiData.sodium_mg) || 0,
+          front_photo_url: urls.front_photo_url, 
+          back_photo_url: urls.back_photo_url,
+          nutrition_label_url: urls.nutrition_label_url,
+          ingredients_photo_url: urls.ingredients_photo_url,
+        }])
+        .select()
+        .single();
   
       if (dbError) throw dbError;
-      router.push(`/${lang}/manage`);
-      router.refresh();
+
+      // 4. REDIRECT TO EDIT PAGE
+      // Em vez de ir para /manage, vamos para o editor para revisão
+      if (newFood?.id) {
+        router.push(`/${lang}/edit/${newFood.id}`);
+        router.refresh();
+      } else {
+        router.push(`/${lang}/manage`);
+      }
+
     } catch (error: any) {
       console.error('Submission error:', error);
       alert(error.message || 'An unexpected error occurred');
