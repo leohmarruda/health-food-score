@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> } // Define as a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resolvedParams = await params;

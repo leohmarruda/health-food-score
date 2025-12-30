@@ -6,7 +6,7 @@ interface NutritionLabelProps {
   usePortion?: boolean;
   multiplier?: number;
   onMultiplierChange?: (newMultiplier: number) => void;
-  dict: any; // Adicionado
+  dict: any;
 }
 
 export default function NutritionLabel({ 
@@ -18,25 +18,25 @@ export default function NutritionLabel({
 }: NutritionLabelProps) {
   if (!data || !dict) return null;
 
-  const t = dict.nutrition || {}; // Usaremos uma seção nova no JSON
+  const t = dict.nutrition || {};
 
   // Calculate nutrition values based on portion size and multiplier
   const baseRatio = usePortion ? ((data.portion_size_value || 100) / 100) : 1;
   const totalRatio = baseRatio * multiplier;
 
   // Helper functions to format nutrition values
-  const formatValue = (num: number | undefined) => {
-    if (!num) return "0";
+  const formatValue = (num: number | null | undefined) => {
+    if (num == null || num === 0) return "0";
     return (num * totalRatio).toFixed(1);
   };
   
-  const formatCalories = (num: number | undefined) => {
-    if (!num) return 0;
+  const formatCalories = (num: number | null | undefined) => {
+    if (num == null) return 0;
     return Math.round(num * totalRatio);
   };
   
-  const calculatePercentage = (value: number | undefined, dailyValue: number) => {
-    if (!value) return 0;
+  const calculatePercentage = (value: number | null | undefined, dailyValue: number) => {
+    if (value == null) return 0;
     return Math.round(((value * totalRatio) / dailyValue) * 100);
   };
 

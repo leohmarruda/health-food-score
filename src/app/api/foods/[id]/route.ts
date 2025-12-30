@@ -4,9 +4,8 @@ import { NextResponse, NextRequest } from 'next/server';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // Tipagem alterada para Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // No Next.js 15, params e cookies devem ser aguardados (await)
   const { id } = await params; 
   const cookieStore = await cookies();
 
@@ -28,7 +27,7 @@ export async function DELETE(
   );
 
   try {
-    // 1. Buscar as URLs das imagens
+    // Fetch image URLs
     const { data: food } = await supabase
       .from('foods')
       .select('front_photo_url, nutrition_label_url, ingredients_photo_url, back_photo_url')
@@ -45,7 +44,7 @@ export async function DELETE(
       }
     }
 
-    // 2. Deletar o registro
+    // Delete the record
     const { error } = await supabase.from('foods').delete().eq('id', id);
     if (error) throw error;
 

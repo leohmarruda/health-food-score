@@ -5,21 +5,19 @@
       "library": "Diretório",
       "addFood": "Adicionar",
       "manage": "Gerenciar",
-      "close": "Fechar"
+      "close": "Fechar",
+      "cancel": "Cancelar",
+      "processing": "Processando..."
     },
     "home": {
       "searchPlaceholder": "Buscar alimentos...",
       "export": "Exportar CSV",
       "loading": "Carregando biblioteca...",
+      "loadError": "Falha ao carregar alimentos",
       "noFoods": "Nenhum alimento encontrado",
-      "noFoodsSearch": "correspondente a",
       "noBrand": "Marca não informada",
       "noIngredients": "Ingredientes não disponíveis",
       "addFirst": "Adicione seu primeiro item",
-      "front": "Frente",
-      "label": "Rótulo",
-      "productPhotos": "Fotos do Produto",
-      "lastUpdate": "Última atualização",
       "grid": "Grade",
       "table": "Tabela",
       "name": "Nome",
@@ -32,7 +30,9 @@
       "protein": "Proteína",
       "carbs": "Carboidratos",
       "fat": "Gorduras",
-      "ingredients": "Ingredientes"
+      "sodium": "Sódio",
+      "saturatedFat": "Gorduras Saturadas",
+      "lastUpdate": "Última atualização"
     },
     "manage": {
       "title": "Gerenciar Biblioteca",
@@ -45,13 +45,17 @@
       "noFoods": "Nenhum alimento encontrado na sua biblioteca.",
       "confirmDelete": "Tem certeza que deseja excluir este item?",
       "deleteError": "Falha ao excluir",
-      "loadError": "Falha ao carregar alimentos"
+      "loadError": "Falha ao carregar alimentos",
+      "confirmDeleteTitle": "Excluir Registro",
+      "confirmDeleteMessage": "Tem certeza que deseja apagar este alimento? Esta ação removerá os dados e todas as imagens do servidor permanentemente.",
+      "deleteLoading": "Excluindo alimento e imagens...",
+      "deleteSuccess": "Alimento removido com sucesso!"
     },
     "addFood": {
       "title": "Adicionar Alimento",
       "subtitle": "Envie fotos específicas para maior precisão da IA.",
       "slotFront": "Frente",
-      "slotBack": "Verso",
+      "slotBack": "Trás",
       "slotNutrition": "Tabela Nutricional",
       "slotIngredients": "Lista de Ingredientes",
       "noImage": "Nenhuma imagem selecionada",
@@ -60,8 +64,6 @@
       "statusSave": "Salvando no banco de dados...",
       "btnSave": "Processar e Salvar Dados",
       "btnProcessing": "Processando...",
-      "processingTitle": "Analisando Alimento...",
-      "processingSubtitle": "Isso pode levar alguns segundos enquanto nossa IA lê os rótulos.",
       "uploadError": "Erro ao carregar imagens. Tente novamente."
     },
     "edit": {
@@ -76,8 +78,8 @@
       "editorTitle": "Editor de Alimento",
       "lastUpdatedLabel": "Última Atualização",
       "sectionBasic": "Metadados Básicos",
-      "labelName": "Nome do Produto",
-      "labelBrand": "Marca",
+      "labelName": "Nome do Produto*",
+      "labelBrand": "Marca*",
       "sectionExtra": "Dados Extraídos e Processos",
       "labelIngredientsRaw": "Lista de Ingredientes (Texto Bruto)",
       "labelNutritionRaw": "Informação Nutricional (Texto Bruto)",
@@ -89,7 +91,25 @@
       "placeholderSpecialNutrients": "Ex. Vitaminas, minerais...",
       "uploadSuccess": "Imagem enviada com sucesso!",
       "uploadError": "Falha no envio da imagem",
-      "saveError": "Erro ao atualizar registro"
+      "saveError": "Erro ao atualizar registro",
+      "saving": "Salvando...",
+      "requiredFieldsError": "Nome é obrigatório.",
+      "hfsCalculationError": "Erro ao calcular o Score Nutricional. Verifique os valores inseridos.",
+      "saveSuccess": "Atualizado com sucesso!",
+      "discardTitle": "Descartar alterações?",
+      "discardMessage": "Você fez alterações neste alimento. Tem certeza que deseja sair sem salvar?",
+      "discardConfirm": "Sim, sair",
+      "discardCancel": "Continuar editando",
+      "confirmDeleteTitle": "Eliminar Alimento?",
+      "confirmDeleteMessage": "Esta ação é permanente e removerá todos os dados e imagens.",
+      "btnDeleteConfirm": "Sim, Eliminar",
+      "confirmDelete": "Tem certeza que deseja excluir este item?",
+      "deleteWarning": "Esta ação não pode ser desfeita",
+      "loadError": "Falha ao carregar dados mais recentes",
+      "deleteSuccess": "Alimento deletado com sucesso",
+      "deleteError": "Falha ao deletar alimento",
+      "rescanSuccess": "Imagem reprocessada com sucesso",
+      "rescanError": "Falha ao reprocessar imagem"
     },
     "nutrition": {
       "factsTitle": "Informação Nutricional",

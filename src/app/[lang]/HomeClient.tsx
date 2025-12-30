@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
-import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { toast } from 'sonner';
+
+import FoodCard from '@/components/FoodCard';
 import FoodProfileModal from '@/components/FoodProfileModal';
 import FoodTable from '@/components/FoodTable';
-import FoodCard from '@/components/FoodCard'; // Importe o componente novo
+import { supabase } from '@/lib/supabase';
 import { downloadAsCSV } from '@/utils/export';
 import type { Food } from '@/types/food';
 
@@ -13,6 +15,7 @@ type SortKey = 'name' | 'energy_kcal' | 'protein_g' | 'hfs';
 type SortOrder = 'asc' | 'desc';
 
 export default function HomeClient({ dict, lang }: { dict: any, lang: string }) {
+  // State
   const [foods, setFoods] = useState<Food[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,17 +27,18 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
     order: 'desc'
   });
 
-  // Use o dicionário para os textos da interface
+  // Derived values
   const t = dict.home || { 
-    searchPlaceholder: lang === 'pt' ? 'Buscar alimentos...' : 'Search foods...',
-    loading: lang === 'pt' ? 'Carregando biblioteca...' : 'Loading library...',
-    noFoods: lang === 'pt' ? 'Nenhum alimento encontrado' : 'No foods found',
-    addFirst: lang === 'pt' ? 'Adicione seu primeiro item' : 'Add your first food item',
-    protein: lang === 'pt' ? 'Proteína' : 'Protein',
+    searchPlaceholder: 'Search foods...',
+    loading: 'Loading library...',
+    noFoods: 'No foods found',
+    addFirst: 'Add your first food item',
+    protein: 'Protein',
     grid: 'Grid',
-    table: lang === 'pt' ? 'Tabela' : 'Table'
+    table: 'Table'
   };
 
+  // Effects
   useEffect(() => {
     async function fetchFoods() {
       try {
@@ -48,6 +52,7 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
         if (data) setFoods(data);
       } catch (error) {
         console.error('Error fetching foods:', error);
+        toast.error(t.loadError || 'Failed to load foods');
       } finally {
         setLoading(false);
       }
@@ -55,14 +60,22 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
     fetchFoods();
   }, []);
 
-  // Lógica de Filtragem e Ordenação Combinada
+  // Computed values
   const processedFoods = useMemo(() => {
-    // 1. Filtrar
     const filtered = foods.filter((food) =>
       food.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // 2. Ordenar
+    // Grid view: sort alphabetically by name
+    if (viewMode === 'grid') {
+      return [...filtered].sort((a, b) => {
+        const aName = (a.name || '').toLowerCase();
+        const bName = (b.name || '').toLowerCase();
+        return aName.localeCompare(bName);
+      });
+    }
+
+    // Table view: use sortConfig
     return [...filtered].sort((a, b) => {
       const aValue = a[sortConfig.key] ?? 0;
       const bValue = b[sortConfig.key] ?? 0;
@@ -71,18 +84,19 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
       if (aValue > bValue) return sortConfig.order === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [foods, searchTerm, sortConfig]);
+  }, [foods, searchTerm, sortConfig, viewMode]);
 
+  const filteredFoods = foods.filter((food) =>
+    food.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Event handlers
   const toggleSort = (key: SortKey) => {
     setSortConfig((prev) => ({
       key,
       order: prev.key === key && prev.order === 'desc' ? 'asc' : 'desc'
     }));
   };
-
-  const filteredFoods = foods.filter((food) =>
-    food.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleFoodClick = (food: any) => {
     setSelectedFood(food);
@@ -96,7 +110,6 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
 
   return (
     <main className="max-w-6xl mx-auto p-8">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-text-main">{dict.common.title}</h1>
         <div className="flex gap-4 w-full md:w-auto">
@@ -126,7 +139,6 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
         </div>
       ) : (
         <>
-          {/* View Controls */}
           <div className="flex justify-between items-center mb-6 gap-4">
             <div className="flex gap-2">
               <button 
@@ -154,8 +166,6 @@ export default function HomeClient({ dict, lang }: { dict: any, lang: string }) 
               📊 {t.export}
             </button>
           </div>
-
-          {/* Grid Mode */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {processedFoods.map((food) => (

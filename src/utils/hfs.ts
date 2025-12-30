@@ -1,6 +1,6 @@
 import { FoodFormData } from '@/types/food';
 
-export function checkInput(formData: FoodFormData): boolean {
+export function checkHFSInput(formData: FoodFormData): boolean {
     if (!formData.name?.trim() || !(formData.brand ?? '').trim()) 
         return false;
     return true;
@@ -15,8 +15,18 @@ interface HFSResponse {
   }
 
 export async function calculateHFS(formData: FoodFormData): Promise<HFSResponse> {
+  // Bypass API call - return default score
+  // TODO: Re-enable API call when ready
+  return { 
+    success: true,
+    hfs_score: -1,
+    confidence: 1 
+  };
+
+  // Original API call code (commented out):
+  /*
   try {
-    // 2. Chamada para sua rota de API que processa a IA (ex: OpenAI ou Gemini)
+    // Call API route that processes AI (e.g., OpenAI or Gemini)
     const response = await fetch('/api/hfs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,23 +43,24 @@ export async function calculateHFS(formData: FoodFormData): Promise<HFSResponse>
       }),
     });
 
-    if (!response.ok) throw new Error("Erro na resposta da IA");
+    if (!response.ok) throw new Error("AI response error");
 
     const { temp_hfs_score } = await response.json();
 
-    // 3. Retorna os dados atualizados com o novo HFS
+    // Return updated data with new HFS score
     return { 
         success: true,
         hfs_score: temp_hfs_score,
         confidence: 1 
     };
   } catch (error) {
-    console.error("Falha ao calcular HFS via IA, definindo como -1:", error);
-    // Em caso de erro na IA, retornamos -1 como fallback
+    console.error("Failed to calculate HFS via AI, setting to -1:", error);
+    // On AI error, return -1 as fallback
     return { 
         success: false,
         hfs_score: -1,
         confidence: 1 
     };
   }
+  */
 }

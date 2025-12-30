@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./../globals.css";
 import Navbar from '@/components/Navbar'; // Adjust path if needed
+import { Toaster } from 'sonner';
 
 export default function RootLayout({
   children,
@@ -13,6 +14,7 @@ export default function RootLayout({
       <body className="bg-background text-text-main min-h-screen">
         <Navbar />
         {children}
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

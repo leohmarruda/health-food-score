@@ -1,19 +1,33 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useRouter, useParams } from 'next/navigation';
-import { processImages } from '@/utils/api';
+import { toast } from 'sonner';
+
 import { getDictionary } from '@/lib/get-dictionary';
+import { supabase } from '@/lib/supabase';
+import { processImages } from '@/utils/api';
 
 export default function NewFood() {
-  const [files, setFiles] = useState<{ [key: string]: File | null }>({});
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('');
-  const [dict, setDict] = useState<any>(null);
+  // Hooks
   const router = useRouter();
   const params = useParams();
   const lang = (params?.lang as string) || 'pt';
 
+  // State
+  const [files, setFiles] = useState<{ [key: string]: File | null }>({});
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
+  const [dict, setDict] = useState<any>(null);
+
+  // Constants
+  const SLOTS = [
+    { id: 'front', label: dict?.addFood?.slotFront || 'Front of Pack', key: 'front_photo_url', required: true },
+    { id: 'back', label: dict?.addFood?.slotBack || 'Back of Pack', key: 'back_photo_url', required: false },
+    { id: 'nutrition', label: dict?.addFood?.slotNutrition || 'Nutrition Table', key: 'nutrition_label_url', required: true },
+    { id: 'ingredients', label: dict?.addFood?.slotIngredients || 'Ingredients List', key: 'ingredients_photo_url', required: false },
+  ];
+
+  // Effects
   useEffect(() => {
     async function load() {
       const d = await getDictionary(lang as 'pt' | 'en');
@@ -22,13 +36,7 @@ export default function NewFood() {
     load();
   }, [lang]);
 
-  const SLOTS = [
-    { id: 'front', label: dict?.addFood?.slotFront || 'Front of Pack', key: 'front_photo_url' },
-    { id: 'back', label: dict?.addFood?.slotBack || 'Back of Pack (optional)', key: 'back_photo_url' },
-    { id: 'nutrition', label: dict?.addFood?.slotNutrition || 'Nutrition Table', key: 'nutrition_label_url' },
-    { id: 'ingredients', label: dict?.addFood?.slotIngredients || 'Ingredients List', key: 'ingredients_photo_url' },
-  ];
-
+  // Event handlers
   const handleFileChange = (slotId: string, file: File) => {
     setFiles(prev => ({ ...prev, [slotId]: file }));
   };
@@ -40,8 +48,8 @@ export default function NewFood() {
     
     try {
       const urls: { [key: string]: string | null } = {};
-  
-      // 1. UPLOAD TO STORAGE
+
+      // Upload images to storage
       for (const slot of SLOTS) {
         const file = files[slot.id];
         if (!file) { urls[slot.key] = null; continue; }
@@ -53,15 +61,13 @@ export default function NewFood() {
         const { data: { publicUrl } } = supabase.storage.from('food-images').getPublicUrl(data.path);
         urls[slot.key] = publicUrl;
       }
-  
-      // 2. UNIFIED AI PROCESSING
+
+      // Process images with AI
       setStatus(dict?.addFood?.statusAI || 'AI is extracting data...');
       const aiData = await processImages(Object.values(urls).filter(Boolean) as string[], 'full-scan');
 
-      // 3. SAVE TO DATABASE & GET ID
+      // Save to database and get ID
       setStatus(dict?.addFood?.statusSave || 'Saving to database...');
-      
-      // MUDANÇA AQUI: Adicionamos .select().single() para pegar o ID do novo registro
       const { data: newFood, error: dbError } = await supabase
         .from('foods')
         .insert([{
@@ -84,11 +90,9 @@ export default function NewFood() {
         }])
         .select()
         .single();
-  
       if (dbError) throw dbError;
 
-      // 4. REDIRECT TO EDIT PAGE
-      // Em vez de ir para /manage, vamos para o editor para revisão
+      // Redirect to edit page for review
       if (newFood?.id) {
         router.push(`/${lang}/edit/${newFood.id}`);
         router.refresh();
@@ -98,7 +102,7 @@ export default function NewFood() {
 
     } catch (error: any) {
       console.error('Submission error:', error);
-      alert(error.message || 'An unexpected error occurred');
+      toast.error(error.message || dict?.addFood?.uploadError || 'An unexpected error occurred');
     } finally {
       setLoading(false);
       setStatus('');
@@ -116,33 +120,32 @@ export default function NewFood() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {SLOTS.map((slot) => (
-          <div key={slot.id} className="border-2 border-dashed border-text-main/20 rounded-theme p-4 flex flex-col items-center bg-card min-h-[220px]">
-            <span className="text-sm font-semibold mb-3 text-text-main">{slot.label}</span>
-            
-            {/* PREVIEW IMAGE BLOCK */}
-            {files[slot.id] ? (
-              <div className="relative w-full h-32 mb-3 group">
-                <img 
-                  src={URL.createObjectURL(files[slot.id] as File)} 
-                  className="w-full h-full object-cover rounded-theme border border-text-main/10"
-                  alt="Preview"
-                />
-                {/* Remove button to clear the slot */}
-                <button 
-                  onClick={() => setFiles(prev => ({ ...prev, [slot.id]: null }))}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg opacity-0 group-hover:opacity-100 transition"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <div className="w-full h-32 flex items-center justify-center bg-text-main/5 rounded-theme mb-3 border border-text-main/10">
-                <span className="text-text-main/40 text-xs">{dict.addFood.noImage}</span>
-              </div>
-            )}
-
-            <input 
+          {SLOTS.map((slot) => (
+            <div key={slot.id} className={`border-2 border-dashed ${slot.required ? 'border-primary/40' : 'border-text-main/20'} rounded-theme p-4 flex flex-col items-center bg-card min-h-[220px]`}>
+              <span className="text-sm font-semibold mb-3 text-text-main">
+                {slot.label}
+                {slot.required && <span className="text-red-500 ml-1">*</span>}
+              </span>
+              {files[slot.id] ? (
+                <div className="relative w-full h-32 mb-3 group">
+                  <img 
+                    src={URL.createObjectURL(files[slot.id] as File)} 
+                    className="w-full h-full object-cover rounded-theme border border-text-main/10"
+                    alt="Preview"
+                  />
+                  <button 
+                    onClick={() => setFiles(prev => ({ ...prev, [slot.id]: null }))}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg opacity-0 group-hover:opacity-100 transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="w-full h-32 flex items-center justify-center bg-text-main/5 rounded-theme mb-3 border border-text-main/10">
+                  <span className="text-text-main/40 text-xs">{dict.addFood.noImage}</span>
+                </div>
+              )}
+              <input 
               type="file" 
               accept="image/*"
               onChange={(e) => e.target.files?.[0] && handleFileChange(slot.id, e.target.files[0])}

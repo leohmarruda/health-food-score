@@ -5,21 +5,19 @@
       "library": "Library",
       "addFood": "Add Food",
       "manage": "Manage",
-      "close": "Close"
+      "close": "Close",
+      "cancel": "Cancel",
+      "processing": "Processing..."
     },
     "home": {
       "searchPlaceholder": "Search foods...",
       "export": "Export CSV",
       "loading": "Loading library...",
+      "loadError": "Failed to load foods",
       "noFoods": "No foods found",
-      "noFoodsSearch": "matching",
       "noBrand": "Generic/No brand",
       "noIngredients": "Ingredients not available",
       "addFirst": "Add your first food item",
-      "front": "Front",
-      "label": "Label",
-      "productPhotos": "Product Photos",
-      "lastUpdate": "Last update",
       "grid": "Grid",
       "table": "Table",
       "name": "Name",
@@ -32,7 +30,9 @@
       "protein": "Protein",
       "carbs": "Carbs",
       "fat": "Fat",
-      "ingredients": "Ingredients"  
+      "sodium": "Sodium",
+      "saturatedFat": "Saturated Fat",
+      "lastUpdate": "Last update"
     },
     "manage": {
       "title": "Manage Library",
@@ -45,7 +45,11 @@
       "noFoods": "No foods found in your library.",
       "confirmDelete": "Are you sure you want to delete this entry?",
       "deleteError": "Failed to delete",
-      "loadError": "Failed to load foods"
+      "loadError": "Failed to load foods",
+      "confirmDeleteTitle": "Delete Record",
+      "confirmDeleteMessage": "Are you sure you want to delete this food item? This action will permanently remove all data and images from the server.",
+      "deleteLoading": "Deleting food item and images...",
+      "deleteSuccess": "Food item removed successfully!"
     },
     "addFood": {
       "title": "Add New Food",
@@ -60,8 +64,6 @@
       "statusSave": "Saving to database...",
       "btnSave": "Process & Save Data",
       "btnProcessing": "Processing...",
-      "processingTitle": "Analyzing Food...",
-      "processingSubtitle": "This may take a few seconds while our AI reads the labels.",
       "uploadError": "Error uploading images. Please try again."
     },
     "edit": {
@@ -76,8 +78,8 @@
       "editorTitle": "Food Item Editor",
       "lastUpdatedLabel": "Last Updated",
       "sectionBasic": "Basic Metadata",
-      "labelName": "Product Name",
-      "labelBrand": "Brand",
+      "labelName": "Product Name*",
+      "labelBrand": "Brand*",
       "sectionExtra": "Extracted data",
       "labelIngredientsRaw": "Raw ingredient list",
       "labelNutritionRaw": "Raw nutritional info",
@@ -89,7 +91,25 @@
       "placeholderSpecialNutrients": "E.g. Vitamins, minerals...",
       "uploadSuccess": "Image uploaded successfully!",
       "uploadError": "Failed to upload image",
-      "saveError": "Failed to update record"
+      "saveError": "Failed to update record",
+      "saving": "Saving...",
+      "requiredFieldsError": "Name is required.",
+      "hfsCalculationError": "Error calculating Nutritional Score. Please check the entered values.",
+      "saveSuccess": "Updated successfully!",
+      "discardTitle": "Discard changes?",
+      "discardMessage": "You have made changes to this food item. Are you sure you want to leave without saving?",
+      "discardConfirm": "Yes, leave",
+      "discardCancel": "Continue editing",
+      "confirmDeleteTitle": "Delete Food Item?",
+      "confirmDeleteMessage": "This action is permanent and will remove all data and images.",
+      "btnDeleteConfirm": "Yes, Delete",
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "deleteWarning": "This action cannot be undone",
+      "loadError": "Failed to load latest data",
+      "deleteSuccess": "Food item deleted successfully",
+      "deleteError": "Failed to delete food item",
+      "rescanSuccess": "Image rescanned successfully",
+      "rescanError": "Failed to rescan image"
     },
     "nutrition": {
       "factsTitle": "Nutrition Facts",

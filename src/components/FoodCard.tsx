@@ -9,7 +9,7 @@ interface Food {
 }
 
 export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
-  // Helper para cores do badge HFS
+  // Get HFS badge color styles
   const getHFSStyles = (score: number) => {
     if (score >= 4) return 'bg-green-100 text-green-700 border-green-200';
     if (score >= 2.5) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
@@ -19,7 +19,6 @@ export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
 
   return (
     <div className="border border-text-main/10 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all bg-card group cursor-pointer">
-      {/* Container da Imagem */}
       <div className="relative h-48 w-full bg-text-main/5 overflow-hidden">
         {food.front_photo_url ? (
           <img 
@@ -39,14 +38,10 @@ export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
           <h3 className="font-bold text-lg capitalize text-text-main truncate">
             {food.name || 'Unknown Food'}
           </h3>
-          
-          {/* Badge de HFS (Substituindo Score antigo) */}
-          <span className={`px-2 py-1 rounded text-[10px] font-black border flex-shrink-0 ${getHFSStyles(food.hfs)}`}>
-            HFS: {food.hfs >= 0 ? food.hfs.toFixed(1) : '—'}
+          <span className={`px-2 py-1 rounded text-[10px] font-black border flex-shrink-0 ${getHFSStyles(food.hfs ?? 0)}`}>
+            HFS: {food.hfs != null && food.hfs >= 0 ? food.hfs.toFixed(1) : '—'}
           </span>
         </div>
-
-        {/* Info de Calorias */}
         <div className="flex items-center gap-2 mt-2">
           <span className="text-text-main/60 text-sm">
             🔥 {food.energy_kcal || 0} kcal

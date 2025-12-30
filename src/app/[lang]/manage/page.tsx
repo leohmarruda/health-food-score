@@ -1,35 +1,48 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import type { Food } from '@/types/food';
-import { getDictionary } from '@/lib/get-dictionary';
-import { useParams } from 'next/navigation'; 
+import { useParams } from 'next/navigation';
+import { toast } from 'sonner';
+
+import ConfirmModal from '@/components/ConfirmModal';
 import FoodProfileModal from '@/components/FoodProfileModal';
+import { getDictionary } from '@/lib/get-dictionary';
+import { supabase } from '@/lib/supabase';
+import type { Food } from '@/types/food';
 
 export default function ManageFoods() {
+  // Hooks
+  const params = useParams();
+  const lang = (params?.lang as string) || 'pt';
+
+  // State
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
   const [dict, setDict] = useState<any>(null);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const params = useParams();
-  const lang = (params?.lang as string) || 'pt';
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
+  // Derived values
+  const t = dict?.manage || {};
+
+  // Effects
   useEffect(() => {
-      // Carrega o dicionário e os alimentos ao mesmo tempo
-      async function init() {
-        try {
-          const dictionary = await getDictionary(lang as 'pt' | 'en');
-          setDict(dictionary);
-          await fetchFoods();
-        } catch (error) {
-          console.error('Init error:', error);
-        }
+    async function init() {
+      try {
+        const dictionary = await getDictionary(lang as 'pt' | 'en');
+        setDict(dictionary);
+        await fetchFoods();
+      } catch (error) {
+        console.error('Init error:', error);
+        toast.error('Failed to initialize page');
       }
-      init();
-    }, [lang]);
+    }
+    init();
+  }, [lang]);
 
+  // Data fetching
   async function fetchFoods() {
     try {
       setLoading(true);
@@ -42,42 +55,55 @@ export default function ManageFoods() {
       if (data) setFoods(data);
     } catch (error) {
       console.error('Error fetching foods:', error);
-      alert('Failed to load foods');
+      toast.error(t.loadError || 'Failed to load foods');
     } finally {
       setLoading(false);
     }
   }
+
+  // Event handlers
+  const confirmDeletion = (id: string) => {
+    setItemToDelete(id);
+    setShowDeleteModal(true);
+  };
 
   const handleFoodClick = (food: Food) => {
     setSelectedFood(food);
     setIsModalOpen(true);
   };
 
-  async function handleDelete(id: string) {
-    if (!confirm(t.confirmDelete || "Are you sure?")) return;
-
-    try {
-      const res = await fetch(`/api/foods/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        // Remove do estado local para feedback instantâneo
-        setFoods(foods.filter(f => f.id !== id));
-      } else {
-        const error = await res.json();
-        throw new Error(error.error || 'Failed to delete');
+  async function handleDelete() {
+    if (!itemToDelete) return;
+  
+    const deletePromise = async () => {
+      const res = await fetch(`/api/foods/${itemToDelete}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || t.deleteError || 'Failed to delete');
       }
-    } catch (error: any) {
-      console.error('Delete error:', error);
-      alert(error.message || 'Failed to delete entry');
-    }
+      setFoods(prev => prev.filter(f => f.id !== itemToDelete));
+      return res;
+    };
+  
+    toast.promise(deletePromise(), {
+      loading: t.deleteLoading || 'Deleting food item and images...',
+      success: () => {
+        setShowDeleteModal(false);
+        setItemToDelete(null);
+        return t.deleteSuccess || 'Food item removed successfully!';
+      },
+      error: (err) => {
+        setShowDeleteModal(false);
+        return `${t.deleteError || 'Failed to delete'}: ${err.message}`;
+      },
+    });
   }
   
-  const t = dict?.manage || {};
-
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-text-main">{t.title}</h1>
-        <Link href="/add-food" className="bg-primary text-white px-4 py-2 rounded-theme text-sm hover:opacity-90 transition">
+        <Link href={`/${lang}/new-food`} className="bg-primary text-white px-4 py-2 rounded-theme text-sm hover:opacity-90 transition">
           + {t.addNew}
         </Link>
       </div>
@@ -93,7 +119,6 @@ export default function ManageFoods() {
           </thead>
           <tbody className="divide-y divide-text-main/10">
             {loading ? (
-              // Loading skeleton
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   <td className="px-6 py-4">
@@ -130,16 +155,16 @@ export default function ManageFoods() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-4">
                       <Link 
-                        href={`/edit/${food.id}`} 
+                        href={`/${lang}/edit/${food.id}`} 
                         className="text-primary hover:opacity-80 hover:underline font-medium transition"
                       >
                       {t.edit}
                       </Link>
                       <button 
-                        onClick={() => handleDelete(food.id)} 
-                        className="text-red-600 hover:text-red-700 hover:underline font-medium transition"
+                        onClick={() => confirmDeletion(food.id)} 
+                        className="text-red-500/70 hover:text-red-600 font-bold text-sm transition"
                       >
-                      {t.delete}
+                        {t.delete}
                       </button>
                     </div>
                   </td>
@@ -157,6 +182,19 @@ export default function ManageFoods() {
           dict={dict}
         />
       )}
+      <ConfirmModal 
+        isOpen={showDeleteModal}
+        title={t.confirmDeleteTitle || "Delete Record"}
+        message={t.confirmDeleteMessage || "Are you sure you want to delete this food item? This action will permanently remove all data and images from the server."}
+        variant="danger"
+        confirmLabel={t.delete}
+        dict={dict}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setItemToDelete(null);
+        }}
+      />
     </div>
   );
 }

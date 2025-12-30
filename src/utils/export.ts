@@ -1,28 +1,33 @@
 export const downloadAsCSV = (data: any[], fileName: string) => {
     if (data.length === 0) return;
   
-    // 1. Define the headers you want in the CSV
+    // Define headers
     const headers = ["Name", "Brand", "Kcal", "Protein (g)", "Carbs (g)", "Fat (g)", "Score"];
     
-    // 2. Map the data to rows matching the headers
+    // Map data to rows, using semicolon as delimiter (Brazilian Excel standard)
+    const delimiter = ";";
     const rows = data.map(food => [
-      `"${food.name}"`, // Wrap in quotes to handle commas in names
-      `"${food.brand}"`,
-      food.energy_kcal,
-      food.protein_g,
-      food.carbs_total_g,
-      food.fat_total_g,
-      food.hfs
+      `"${(food.name || "").replace(/"/g, '""')}"`, // Escape quotes and handle null values
+      `"${(food.brand || "").replace(/"/g, '""')}"`,
+      food.energy_kcal ?? "",
+      food.protein_g ?? "",
+      food.carbs_total_g ?? "",
+      food.fat_total_g ?? "",
+      food.hfs ?? ""
     ]);
   
-    // 3. Combine headers and rows
+    // Combine headers and rows with semicolon delimiter
     const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
+      headers.join(delimiter),
+      ...rows.map(row => row.join(delimiter))
     ].join("\n");
   
-    // 4. Create a download link and click it
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Add UTF-8 BOM for proper encoding in Excel (especially Brazilian Excel)
+    const BOM = "\uFEFF";
+    const csvWithBOM = BOM + csvContent;
+  
+    // Create blob with UTF-8 encoding
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
