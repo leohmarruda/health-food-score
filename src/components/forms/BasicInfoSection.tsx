@@ -19,14 +19,14 @@ export default function BasicInfoSection({
         <FormField
           label={dict.edit.labelName}
           name="name"
-          value={formData.name}
+          value={formData.name || ''}
           onChange={(value) => onChange('name', value)}
           required={true}
         />
         <FormField
           label={dict.edit.labelBrand}
           name="brand"
-          value={formData.brand}
+          value={formData.brand || ''}
           onChange={(value) => onChange('brand', value)}
         />
       </div>
