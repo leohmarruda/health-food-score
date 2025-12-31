@@ -28,7 +28,7 @@ export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
   const saveFood = async (formData: FoodFormData) => {
     const validation = validateFormData(formData);
     if (!validation.valid) {
-      toast.error(dict?.edit?.requiredFieldsError || 'Name and Brand are required.');
+      toast.error(dict?.pages?.edit?.requiredFieldsError || 'Name and Brand are required.');
       return;
     }
 
@@ -59,7 +59,7 @@ export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
           if (!hfs_response.success || hfs_response.error) {
             const errorMessage = hfs_response.error || 
               dict?.hfs?.calculationError ||
-              dict?.edit?.hfsCalculationError ||
+              dict?.pages?.edit?.hfsCalculationError ||
               "Error calculating Nutritional Score. Please check the entered values.";
             toast.error(errorMessage);
             throw new Error(errorMessage);
@@ -68,7 +68,7 @@ export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
         } catch (calcError: any) {
           const errorMessage = calcError?.message || 
             dict?.hfs?.calculationError ||
-            dict?.edit?.hfsCalculationError ||
+            dict?.pages?.edit?.hfsCalculationError ||
             "Error calculating Nutritional Score. Please check the entered values.";
           toast.error(errorMessage);
           throw new Error(errorMessage);
@@ -115,7 +115,7 @@ export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
       });
 
       if (!res.ok) {
-        throw new Error(dict?.edit?.saveError || 'Error communicating with server');
+        throw new Error(dict?.pages?.edit?.saveError || 'Error communicating with server');
       }
 
       setIsSaving(false);
@@ -124,10 +124,10 @@ export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
     };
 
     toast.promise(saveAction(), {
-      loading: dict?.edit?.saving || 'Calculating score and saving...',
+      loading: dict?.pages?.edit?.saving || 'Calculating score and saving...',
       success: (score) => {
         const scoreMsg = score >= 0 ? ` (Score: ${score})` : '';
-        return `${dict?.edit?.saveSuccess || 'Updated successfully!'}${scoreMsg}`;
+        return `${dict?.pages?.edit?.saveSuccess || 'Updated successfully!'}${scoreMsg}`;
       },
       error: (err) => {
         setIsSaving(false);

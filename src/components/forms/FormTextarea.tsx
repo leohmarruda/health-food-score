@@ -33,8 +33,8 @@ export default function FormTextarea({
             onClick={onToggleLock}
             className="ml-auto flex-shrink-0"
             title={locked 
-              ? (dict?.edit?.unlockFieldTooltip || 'Unlock field (allow auto-update)')
-              : (dict?.edit?.lockFieldTooltip || 'Lock field (prevent auto-update)')}
+              ? (dict?.components?.forms?.formTextarea?.unlockFieldTooltip || 'Unlock field (allow auto-update)')
+              : (dict?.components?.forms?.formTextarea?.lockFieldTooltip || 'Lock field (prevent auto-update)')}
           >
             <svg
               className={`w-3.5 h-3.5 transition-colors ${

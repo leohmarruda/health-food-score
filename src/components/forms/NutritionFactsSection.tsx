@@ -33,24 +33,28 @@ export default function NutritionFactsSection({
 }: NutritionFactsSectionProps) {
   return (
     <section>
-      <h3 className="text-lg font-bold mb-4 text-primary">2. {dict.nutrition.factsTitle}</h3>
+      <h3 className="text-lg font-bold mb-4 text-primary">2. {dict?.components?.nutritionLabel?.factsTitle || 'Nutrition Facts'}</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {NUTRITION_FIELDS.map(({ labelKey, field, type }) => (
-          <FormField
-            key={field}
-            label={dict.home[labelKey] || dict.nutrition[labelKey] || field}
-            name={field as keyof FoodFormData}
-            value={formData[field as keyof FoodFormData] as string | number}
-            onChange={(value) => onChange(field as keyof FoodFormData, value)}
-            type={type}
-            locked={isLocked?.(field)}
-            onToggleLock={onToggleLock ? () => onToggleLock(field) : undefined}
-            dict={dict}
-          />
-        ))}
+        {NUTRITION_FIELDS.map(({ labelKey, field, type }) => {
+          const nutritionDict = dict?.components?.nutritionLabel || {};
+          const label = nutritionDict[labelKey] || field;
+          return (
+            <FormField
+              key={field}
+              label={label}
+              name={field as keyof FoodFormData}
+              value={formData[field as keyof FoodFormData] as string | number}
+              onChange={(value) => onChange(field as keyof FoodFormData, value)}
+              type={type}
+              locked={isLocked?.(field)}
+              onToggleLock={onToggleLock ? () => onToggleLock(field) : undefined}
+              dict={dict}
+            />
+          );
+        })}
         {/* ABV - Alcohol by Volume */}
         <FormField
-          label={dict.edit.labelABV || 'ABV (%) - Alcohol by Volume'}
+          label={dict?.pages?.edit?.labelABV || 'ABV (%) - Alcohol by Volume'}
           name="abv_percentage"
           value={formData.abv_percentage ?? ''}
           onChange={(value) => onChange('abv_percentage', value)}
@@ -77,7 +81,7 @@ export default function NutritionFactsSection({
         {/* HFS Version */}
         <div>
           <label className="block text-xs font-bold text-text-main/70 mb-1">
-            {dict?.edit?.labelHfsVersion || 'HFS Version'}
+            {dict?.pages?.edit?.labelHfsVersion || 'HFS Version'}
           </label>
           <select
             value={formData.hfs_version || 'v2'}

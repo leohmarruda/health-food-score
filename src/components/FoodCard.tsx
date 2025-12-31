@@ -14,7 +14,7 @@ export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
           />
         ) : (
           <div className="flex items-center justify-center h-full text-text-main/40 bg-text-main/5">
-            {dict?.home?.noPhoto || 'No Image'}
+            {dict?.components?.foodCard?.noPhoto || 'No Image'}
           </div>
         )}
       </div>

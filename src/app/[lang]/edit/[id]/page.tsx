@@ -64,7 +64,7 @@ export default function EditFood() {
       }
     } catch (err) {
       console.error('Error syncing data:', err);
-      toast.error(dict?.edit?.loadError || 'Failed to load latest data');
+      toast.error(dict?.pages?.edit?.loadError || 'Failed to load latest data');
     }
   };
 
@@ -107,17 +107,17 @@ export default function EditFood() {
     try {
       setLoading(true);
       await deleteFoodRecord(id as string);
-      toast.success(dict?.edit?.deleteSuccess || 'Food item deleted successfully');
+      toast.success(dict?.pages?.edit?.deleteSuccess || 'Food item deleted successfully');
       router.push(`/${lang}/manage`);
       router.refresh();
     } catch (err) {
-      toast.error(dict?.edit?.deleteError || 'Failed to delete food item');
+      toast.error(dict?.pages?.edit?.deleteError || 'Failed to delete food item');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !dict || !dict.edit) {
+  if (loading || !dict || !dict.pages?.edit) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -125,7 +125,7 @@ export default function EditFood() {
     );
   }
 
-  const t = dict.edit;
+  const t = dict.pages.edit;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -230,7 +230,7 @@ export default function EditFood() {
                   <span>{t.btnDelete || 'Delete Record Permanently'}</span>
                 </button>
                 <p className="text-xs text-center text-text-main/50 dark:text-text-main/40 mt-3 font-medium">
-                  {dict?.edit?.deleteWarning || 'This action cannot be undone'}
+                  {dict?.pages?.edit?.deleteWarning || 'This action cannot be undone'}
                 </p>
               </div>
             </div>

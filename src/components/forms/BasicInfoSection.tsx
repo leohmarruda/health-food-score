@@ -18,10 +18,10 @@ export default function BasicInfoSection({
 }: BasicInfoSectionProps) {
   return (
     <section>
-      <h3 className="text-lg font-bold mb-4 text-primary">1. {dict.edit.sectionBasic}</h3>
+      <h3 className="text-lg font-bold mb-4 text-primary">1. {dict?.pages?.edit?.sectionBasic || 'Basic Metadata'}</h3>
       <div className="grid grid-cols-2 gap-4">
         <FormField
-          label={dict.edit.labelName}
+          label={dict?.pages?.edit?.labelName || 'Product Name*'}
           name="name"
           value={formData.name || ''}
           onChange={(value) => onChange('name', value)}
@@ -31,7 +31,7 @@ export default function BasicInfoSection({
           dict={dict}
         />
         <FormField
-          label={dict.edit.labelBrand}
+          label={dict?.pages?.edit?.labelBrand || 'Brand*'}
           name="brand"
           value={formData.brand ?? ''}
           onChange={(value) => onChange('brand', value)}
@@ -40,7 +40,7 @@ export default function BasicInfoSection({
           dict={dict}
         />
         <FormField
-          label={dict.edit.labelLocation || 'Location'}
+          label={dict?.pages?.edit?.labelLocation || 'Location'}
           name="location"
           value={formData.location || ''}
           onChange={(value) => onChange('location', value)}
@@ -50,7 +50,7 @@ export default function BasicInfoSection({
           dict={dict}
         />
         <FormField
-          label={dict.edit.labelPrice || 'Price'}
+          label={dict?.pages?.edit?.labelPrice || 'Price'}
           name="price"
           value={formData.price || ''}
           onChange={(value) => onChange('price', value)}

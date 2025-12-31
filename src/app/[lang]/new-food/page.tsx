@@ -21,10 +21,10 @@ export default function NewFood() {
 
   // Constants
   const SLOTS = [
-    { id: 'front', label: dict?.addFood?.slotFront || 'Front of Pack', key: 'front_photo_url', required: true },
-    { id: 'back', label: dict?.addFood?.slotBack || 'Back of Pack', key: 'back_photo_url', required: false },
-    { id: 'nutrition', label: dict?.addFood?.slotNutrition || 'Nutrition Table', key: 'nutrition_label_url', required: true },
-    { id: 'ingredients', label: dict?.addFood?.slotIngredients || 'Ingredients List', key: 'ingredients_photo_url', required: false },
+    { id: 'front', label: dict?.pages?.addFood?.slotFront || 'Front of Pack', key: 'front_photo_url', required: true },
+    { id: 'back', label: dict?.pages?.addFood?.slotBack || 'Back of Pack', key: 'back_photo_url', required: false },
+    { id: 'nutrition', label: dict?.pages?.addFood?.slotNutrition || 'Nutrition Table', key: 'nutrition_label_url', required: true },
+    { id: 'ingredients', label: dict?.pages?.addFood?.slotIngredients || 'Ingredients List', key: 'ingredients_photo_url', required: false },
   ];
 
   // Effects
@@ -44,7 +44,7 @@ export default function NewFood() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setStatus(dict?.addFood?.statusUpload || 'Uploading images...');
+    setStatus(dict?.pages?.addFood?.statusUpload || 'Uploading images...');
     
     try {
       const urls: { [key: string]: string | null } = {};
@@ -63,11 +63,11 @@ export default function NewFood() {
       }
 
       // Process images with AI
-      setStatus(dict?.addFood?.statusAI || 'AI is extracting data...');
+      setStatus(dict?.pages?.addFood?.statusAI || 'AI is extracting data...');
       const aiData = await processImages(Object.values(urls).filter(Boolean) as string[], 'full-scan');
 
       // Save to database and get ID
-      setStatus(dict?.addFood?.statusSave || 'Saving to database...');
+      setStatus(dict?.pages?.addFood?.statusSave || 'Saving to database...');
       const { data: newFood, error: dbError } = await supabase
         .from('foods')
         .insert([{
@@ -102,7 +102,7 @@ export default function NewFood() {
 
     } catch (error: any) {
       console.error('Submission error:', error);
-      toast.error(error.message || dict?.addFood?.uploadError || 'An unexpected error occurred');
+      toast.error(error.message || dict?.pages?.addFood?.uploadError || 'An unexpected error occurred');
     } finally {
       setLoading(false);
       setStatus('');
@@ -114,8 +114,8 @@ export default function NewFood() {
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-main mb-2">{dict.addFood.title}</h1>
-        <p className="text-text-main/70">{dict.addFood.subtitle}</p>
+        <h1 className="text-3xl font-bold text-text-main mb-2">{dict.pages?.addFood?.title}</h1>
+        <p className="text-text-main/70">{dict.pages?.addFood?.subtitle}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -131,7 +131,7 @@ export default function NewFood() {
                   <img 
                     src={URL.createObjectURL(files[slot.id] as File)} 
                     className="w-full h-full object-cover rounded-theme border border-text-main/10"
-                    alt={dict?.edit?.imageAltPreview || 'Image preview'}
+                    alt={dict?.components?.forms?.imageGallery?.imageAltPreview || 'Image preview'}
                   />
                   <button 
                     onClick={() => setFiles(prev => ({ ...prev, [slot.id]: null }))}
@@ -142,7 +142,7 @@ export default function NewFood() {
                 </div>
               ) : (
                 <div className="w-full h-32 flex items-center justify-center bg-text-main/5 rounded-theme mb-3 border border-text-main/10">
-                  <span className="text-text-main/40 text-xs">{dict.addFood.noImage}</span>
+                  <span className="text-text-main/40 text-xs">{dict.pages?.addFood?.noImage}</span>
                 </div>
               )}
               <input 
@@ -172,7 +172,7 @@ export default function NewFood() {
             <span className="absolute left-4 animate-spin">⏳</span>
           )}
           <span className={loading ? 'opacity-70' : ''}>
-            {loading ? dict.addFood.btnProcessing : dict.addFood.btnSave}
+            {loading ? dict.pages?.addFood?.btnProcessing : dict.pages?.addFood?.btnSave}
           </span>
         </button>
       </form>

@@ -18,7 +18,7 @@ export default function NutritionLabel({
 }: NutritionLabelProps) {
   if (!data || !dict) return null;
 
-  const t = dict.nutrition || {};
+  const t = dict?.components?.nutritionLabel || {};
 
   // Calculate nutrition values based on portion size and multiplier
   const baseRatio = usePortion ? ((data.portion_size_value || 100) / 100) : 1;

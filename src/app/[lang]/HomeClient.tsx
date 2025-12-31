@@ -72,12 +72,11 @@ export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, l
   };
 
   // Derived values
-  const t = dict.home || { 
+  const t = dict.pages?.home || { 
     searchPlaceholder: 'Search foods...',
     loading: 'Loading library...',
     noFoods: 'No foods found',
     addFirst: 'Add your first food item',
-    protein: 'Protein',
     grid: 'Grid',
     table: 'Table'
   };
@@ -293,7 +292,7 @@ export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, l
   return (
     <main className="max-w-6xl mx-auto p-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold text-text-main">{dict.common.title}</h1>
+        <h1 className="text-3xl font-bold text-text-main">{dict?.common?.title || 'Food Library'}</h1>
         <div className="flex gap-4 w-full md:w-auto">
           <input
             type="text"
@@ -309,7 +308,7 @@ export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, l
         <div className="flex flex-col items-center justify-center py-20">
           <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
           <p className="text-text-main/70">
-            {getFoodIdFromPath() ? (dict?.home?.loadingView || 'Loading...') : t.loading}
+            {getFoodIdFromPath() ? (dict?.pages?.home?.loadingView || 'Loading...') : t.loading}
           </p>
         </div>
       ) : filteredFoods.length === 0 ? (

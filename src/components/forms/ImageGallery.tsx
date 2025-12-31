@@ -66,9 +66,9 @@ export default function ImageGallery({
         onImageUpdate(activeTab, publicUrl);
       }
       
-      toast.success(dict.edit.uploadSuccess);
+      toast.success(dict?.components?.forms?.imageGallery?.uploadSuccess || 'Image uploaded successfully!');
     } catch (error: any) {
-      toast.error(dict.edit.uploadError);
+      toast.error(dict?.components?.forms?.imageGallery?.uploadError || 'Failed to upload image');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -82,7 +82,7 @@ export default function ImageGallery({
       .filter(Boolean) as string[];
     
     if (allImages.length === 0) {
-      toast.error(dict?.edit?.noPhoto || 'No images available to rescan');
+      toast.error(dict?.components?.forms?.imageGallery?.noPhoto || 'No images available to rescan');
       return;
     }
 
@@ -121,10 +121,10 @@ export default function ImageGallery({
       }
       
       onFormDataUpdate(updateData);
-      toast.success(dict?.edit?.rescanSuccess || 'All images rescanned successfully');
+      toast.success(dict?.components?.forms?.imageGallery?.rescanSuccess || 'All images rescanned successfully');
     } catch (err) {
       console.error(err);
-      toast.error(dict?.edit?.rescanError || 'Failed to rescan images');
+      toast.error(dict?.components?.forms?.imageGallery?.rescanError || 'Failed to rescan images');
     } finally {
       setIsRescanning(false);
     }
@@ -147,13 +147,13 @@ export default function ImageGallery({
   return (
     <div className="lg:w-1/3 space-y-6">
       <h2 className="text-xl font-bold border-b border-text-main/10 pb-2 text-text-main flex justify-between items-center">
-        {dict.edit.imageTitle}
+        {dict?.components?.forms?.imageGallery?.imageTitle || 'Food Item Images'}
         <button
           onClick={handleRescan}
           disabled={isRescanning}
           className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-theme border border-primary/20 hover:bg-primary/20 disabled:opacity-50 transition"
         >
-          {isRescanning ? dict.edit.scanning : `↺ ${dict.edit.btnReprocess}`}
+          {isRescanning ? (dict?.components?.forms?.imageGallery?.scanning || 'Scanning...') : `↺ ${dict?.components?.forms?.imageGallery?.btnReprocess || 'Reprocess images'}`}
         </button>
       </h2>
       <div className="flex bg-text-main/5 p-1 rounded-theme gap-1">
@@ -179,7 +179,7 @@ export default function ImageGallery({
                     : 'text-text-main/60 hover:text-text-main/80'
               }`}
             >
-              {dict?.addFood?.[`slot${tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}`] || tab.id}
+              {dict?.pages?.addFood?.[`slot${tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}`] || tab.id}
             </button>
           );
         })}
@@ -214,11 +214,11 @@ export default function ImageGallery({
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.transformOrigin = '50% 50%';
               }}
-              alt={dict?.edit?.imageAltReference || 'Product image reference'}
+              alt={dict?.components?.forms?.imageGallery?.imageAltReference || 'Product image reference'}
             />
           ) : (
             <div className="text-text-main/40 text-sm italic">
-              {dict.edit.noPhoto} {activeTab}
+              {dict?.components?.forms?.imageGallery?.noPhoto || 'No photo for'} {activeTab}
             </div>
           )}
           <div className="absolute bottom-2 right-2 z-50">
@@ -233,7 +233,7 @@ export default function ImageGallery({
               {uploading ? (
                 <span className="animate-spin text-xs">⏳</span>
               ) : (
-                <span className="text-xs">📤 {dict.edit.btnUpload}</span>
+                <span className="text-xs">📤 {dict?.components?.forms?.imageGallery?.btnUpload || 'Upload New'}</span>
               )}
             </label>
           </div>

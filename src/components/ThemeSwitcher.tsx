@@ -38,7 +38,7 @@ export default function ThemeSwitcher() {
   return (
     <div className="flex items-center gap-1 sm:gap-2">
       <label htmlFor="theme-select" className="text-[10px] sm:text-xs font-medium text-text-main/60 hidden xs:block">
-      {dict?.theme?.theme}
+      {dict?.components?.themeSwitcher?.theme || 'Theme'}
       </label>
       <select
         id="theme-select"
@@ -46,12 +46,12 @@ export default function ThemeSwitcher() {
         onChange={(e) => changeTheme(e.target.value)}
         className="bg-card text-text-main border border-text-main/10 rounded-theme px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-sm outline-none focus:ring-2 focus:ring-primary shadow-sm cursor-pointer"
       >
-        <option value="default">✨ {dict?.theme?.themeModern}</option>
-        <option value="creamsicle">🍦 {dict?.theme?.themeCreamsicle}</option>
-        <option value="organic">🌿 {dict?.theme?.themeOrganic}</option>
-        <option value="heritage">🏛️ {dict?.theme?.themeHeritage}</option>
-        <option value="dark">🌙 {dict?.theme?.themeDark}</option>
-        <option value="cyberpunk">🌌 {dict?.theme?.themeCyberpunk}</option>
+        <option value="default">✨ {dict?.components?.themeSwitcher?.themeModern || 'Modern Light'}</option>
+        <option value="creamsicle">🍦 {dict?.components?.themeSwitcher?.themeCreamsicle || 'Creamsicle'}</option>
+        <option value="organic">🌿 {dict?.components?.themeSwitcher?.themeOrganic || 'Organic Green'}</option>
+        <option value="heritage">🏛️ {dict?.components?.themeSwitcher?.themeHeritage || 'Heritage'}</option>
+        <option value="dark">🌙 {dict?.components?.themeSwitcher?.themeDark || 'Midnight Dark'}</option>
+        <option value="cyberpunk">🌌 {dict?.components?.themeSwitcher?.themeCyberpunk || 'Cyberpunk'}</option>
       </select>
     </div>
   );

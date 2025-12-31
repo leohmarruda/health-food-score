@@ -25,7 +25,7 @@ export default function ManageFoods() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Derived values
-  const t = dict?.manage || {};
+  const t = dict?.pages?.manage || {};
 
   // Effects
   useEffect(() => {
@@ -114,8 +114,8 @@ export default function ManageFoods() {
             <tr>
               <th className="px-6 py-3 text-text-main/70 font-bold w-16"></th>
               <th className="px-6 py-3 text-text-main/70 font-bold">{t.name}</th>
-              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.home?.brand || 'Brand'}</th>
-              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.edit?.labelLocation || 'Location'}</th>
+              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.components?.foodTable?.brand || 'Brand'}</th>
+              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.pages?.edit?.labelLocation || 'Location'}</th>
               <th className="px-6 py-3 text-right text-text-main/70 font-bold">{t.actions}</th>
             </tr>
           </thead>
@@ -158,7 +158,7 @@ export default function ManageFoods() {
                       />
                     ) : (
                       <div className="w-12 h-12 bg-text-main/10 rounded flex items-center justify-center text-text-main/40 text-xs">
-                        {dict?.home?.noPhoto || 'No Image'}
+                        {dict?.components?.foodCard?.noPhoto || 'No Image'}
                       </div>
                     )}
                   </td>
@@ -172,7 +172,7 @@ export default function ManageFoods() {
                     className="px-6 py-4 text-text-main/70 cursor-pointer" 
                     onClick={() => handleFoodClick(food)}
                   >
-                    {food.brand || dict?.home?.noBrand || '—'}
+                    {food.brand || dict?.components?.foodProfileModal?.noBrand || '—'}
                   </td>
                   <td 
                     className="px-6 py-4 text-text-main/70 cursor-pointer" 

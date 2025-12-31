@@ -20,8 +20,8 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
   if (!isOpen || !food || !dict) return null;
 
   const [multiplier, setMultiplier] = useState(1);
-  const t = dict.home;
-  const tm = dict.manage;
+  const t = dict?.components?.foodProfileModal || {};
+  const tm = dict?.pages?.manage || {};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
@@ -155,7 +155,7 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
           <div className="space-y-3 pt-8">
             <div className="mt-6 pt-4 border-t border-text-main/10 flex items-center justify-between">
               <div className="text-[10px] text-text-main/50 italic">
-                {t.lastUpdate || 'Last update'}: {food.created_at 
+                {dict?.pages?.home?.lastUpdate || 'Last update'}: {food.created_at 
                   ? new Date(food.created_at).toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-US') 
                   : (t.manualEntry || 'Manual Entry')}
               </div>

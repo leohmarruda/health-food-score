@@ -8,7 +8,7 @@ interface FoodTableProps {
 }
 
 export default function FoodTable({ foods, onFoodClick, dict, sortConfig, onSort }: any) {
-  const t = dict.home;
+  const t = dict?.components?.foodTable || {};
 
   // Render sort arrow icon
   const SortIcon = ({ column }: { column: string }) => {
@@ -24,25 +24,25 @@ export default function FoodTable({ foods, onFoodClick, dict, sortConfig, onSort
         <thead className="bg-text-main/5 text-text-main/70 uppercase text-xs">
           <tr className="bg-text-main/5 border-b border-text-main/10 text-xs uppercase text-text-main/70 font-bold">
             <th className="px-4 py-3 cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('name')}>
-              <div className="flex items-center">{dict?.home?.name} <SortIcon column="name" /></div>
+              <div className="flex items-center">{t.name || dict?.components?.foodTable?.name || 'Name'} <SortIcon column="name" /></div>
             </th>
             <th className="px-4 py-3 cursor-pointer hover:bg-text-main/5 transition text-center" onClick={() => onSort('hfs')}>
               <div className="flex items-center justify-center">HFS <SortIcon column="hfs" /></div>
             </th>
             <th className="px-4 py-3 cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('brand')}>
-              <div className="flex items-center">{dict?.home?.brand} <SortIcon column="brand" /></div>
+              <div className="flex items-center">{t.brand || dict?.components?.foodTable?.brand || 'Brand'} <SortIcon column="brand" /></div>
             </th>
             <th className="px-4 py-3 text-right cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('energy_kcal')}>
-              <div className="flex items-center justify-end">{dict?.home?.kcal} <SortIcon column="energy_kcal" /></div>
+              <div className="flex items-center justify-end">{t.kcal || dict?.components?.foodTable?.kcal || 'Kcal'} <SortIcon column="energy_kcal" /></div>
             </th>
             <th className="px-4 py-3 text-right cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('protein_g')}>
-              <div className="flex items-center justify-end">{dict?.home?.protein} <SortIcon column="protein_g" /></div>
+              <div className="flex items-center justify-end">{t.protein || dict?.components?.foodTable?.protein || 'Protein'} <SortIcon column="protein_g" /></div>
             </th>
             <th className="px-4 py-3 text-right cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('carbs_total_g')}>
-              <div className="flex items-center justify-end">{dict?.home?.carbs} <SortIcon column="carbs_total_g" /></div>
+              <div className="flex items-center justify-end">{t.carbs || dict?.components?.foodTable?.carbs || 'Carbs'} <SortIcon column="carbs_total_g" /></div>
             </th>
             <th className="px-4 py-3 text-right cursor-pointer hover:bg-text-main/5 transition" onClick={() => onSort('fat_total_g')}>
-              <div className="flex items-center justify-end">{dict?.home?.fat} <SortIcon column="fat_total_g" /></div>
+              <div className="flex items-center justify-end">{t.fat || dict?.components?.foodTable?.fat || 'Fat'} <SortIcon column="fat_total_g" /></div>
             </th>
           </tr>
         </thead>
