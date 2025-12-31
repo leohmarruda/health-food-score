@@ -33,7 +33,7 @@ export default function BasicInfoSection({
         <FormField
           label={dict.edit.labelBrand}
           name="brand"
-          value={formData.brand || ''}
+          value={formData.brand ?? ''}
           onChange={(value) => onChange('brand', value)}
           locked={isLocked?.('brand')}
           onToggleLock={onToggleLock ? () => onToggleLock('brand') : undefined}
