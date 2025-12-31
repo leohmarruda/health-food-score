@@ -32,6 +32,11 @@ export async function PATCH(
         nutrition_raw: body.nutrition_raw, 
         declared_special_nutrients: body.declared_special_nutrients, 
         declared_processes: body.declared_processes,
+        location: body.location,
+        price: body.price,
+        abv_percentage: body.abv_percentage,
+        certifications: body.certifications,
+        hfs_version: body.hfs_version,
         last_update: body.last_update        
       })
       .eq('id', id);

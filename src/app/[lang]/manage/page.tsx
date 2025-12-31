@@ -112,8 +112,10 @@ export default function ManageFoods() {
         <table className="w-full text-left">
           <thead className="bg-text-main/5 border-b border-text-main/10">
             <tr>
+              <th className="px-6 py-3 text-text-main/70 font-bold w-16"></th>
               <th className="px-6 py-3 text-text-main/70 font-bold">{t.name}</th>
-              <th className="px-6 py-3 text-text-main/70 font-bold">{t.calories}</th>
+              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.home?.brand || 'Brand'}</th>
+              <th className="px-6 py-3 text-text-main/70 font-bold">{dict?.edit?.labelLocation || 'Location'}</th>
               <th className="px-6 py-3 text-right text-text-main/70 font-bold">{t.actions}</th>
             </tr>
           </thead>
@@ -122,10 +124,16 @@ export default function ManageFoods() {
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   <td className="px-6 py-4">
+                    <div className="w-12 h-12 bg-gray-200 rounded"></div>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="h-4 bg-gray-200 rounded w-16 ml-auto"></div>
@@ -134,24 +142,44 @@ export default function ManageFoods() {
               ))
             ) : foods.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-6 py-10 text-center text-text-main/60">
+                <td colSpan={5} className="px-6 py-10 text-center text-text-main/60">
                 {t.noFoods}
                 </td>
               </tr>
             ) : (
               foods.map((food) => (
                 <tr key={food.id} className="hover:bg-text-main/5 transition-colors bg-card">
+                  <td className="px-6 py-4">
+                    {food.front_photo_url ? (
+                      <img 
+                        src={food.front_photo_url} 
+                        alt={food.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-text-main/10 rounded flex items-center justify-center text-text-main/40 text-xs">
+                        {dict?.home?.noPhoto || 'No Image'}
+                      </div>
+                    )}
+                  </td>
                   <td 
-                    className="px-6 py-4 font-medium text-text-main" 
+                    className="px-6 py-4 font-medium text-text-main cursor-pointer" 
                     onClick={() => handleFoodClick(food)}
                   >
                     {food.name}
                   </td>
                   <td 
-                    className="px-6 py-4 text-text-main/70" 
+                    className="px-6 py-4 text-text-main/70 cursor-pointer" 
                     onClick={() => handleFoodClick(food)}
                   >
-                    {food.energy_kcal || 0} kcal</td>
+                    {food.brand || dict?.home?.noBrand || '—'}
+                  </td>
+                  <td 
+                    className="px-6 py-4 text-text-main/70 cursor-pointer" 
+                    onClick={() => handleFoodClick(food)}
+                  >
+                    {food.location || '—'}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-4">
                       <Link 

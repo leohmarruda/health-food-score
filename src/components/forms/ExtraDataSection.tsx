@@ -6,12 +6,16 @@ interface ExtraDataSectionProps {
   formData: FoodFormData;
   dict: any;
   onChange: (field: keyof FoodFormData, value: string | string[]) => void;
+  isLocked?: (field: string) => boolean;
+  onToggleLock?: (field: string) => void;
 }
 
 export default function ExtraDataSection({
   formData,
   dict,
-  onChange
+  onChange,
+  isLocked,
+  onToggleLock
 }: ExtraDataSectionProps) {
   const handleIngredientsListChange = (value: string) => {
     const array = value
@@ -33,6 +37,9 @@ export default function ExtraDataSection({
           onChange={(value) => onChange('ingredients_raw', value)}
           rows={3}
           placeholder="..."
+          locked={isLocked?.('ingredients_raw')}
+          onToggleLock={onToggleLock ? () => onToggleLock('ingredients_raw') : undefined}
+          dict={dict}
         />
 
         <FormTextarea
@@ -42,6 +49,9 @@ export default function ExtraDataSection({
           rows={4}
           placeholder={dict.edit.placeholderIngredientList || "Ingredient 1, Ingredient 2, Ingredient 3..."}
           helperText={dict.edit.warningIngredientsCommas || 'Separate ingredients with commas'}
+          locked={isLocked?.('ingredients_list')}
+          onToggleLock={onToggleLock ? () => onToggleLock('ingredients_list') : undefined}
+          dict={dict}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -50,6 +60,9 @@ export default function ExtraDataSection({
             value={formData.nutrition_raw || ''}
             onChange={(value) => onChange('nutrition_raw', value)}
             rows={3}
+            locked={isLocked?.('nutrition_raw')}
+            onToggleLock={onToggleLock ? () => onToggleLock('nutrition_raw') : undefined}
+            dict={dict}
           />
 
           <FormTextarea
@@ -58,6 +71,9 @@ export default function ExtraDataSection({
             onChange={(value) => onChange('declared_special_nutrients', value)}
             rows={3}
             placeholder={dict.edit.placeholderSpecialNutrients || "E.g. Vitamins, minerals..."}
+            locked={isLocked?.('declared_special_nutrients')}
+            onToggleLock={onToggleLock ? () => onToggleLock('declared_special_nutrients') : undefined}
+            dict={dict}
           />
         </div>
 
@@ -67,6 +83,20 @@ export default function ExtraDataSection({
           value={formData.declared_processes || ''}
           onChange={(value) => onChange('declared_processes', value)}
           type="text"
+          locked={isLocked?.('declared_processes')}
+          onToggleLock={onToggleLock ? () => onToggleLock('declared_processes') : undefined}
+          dict={dict}
+        />
+
+        <FormField
+          label={dict.edit.labelCertifications || 'Certifications'}
+          name="certifications"
+          value={formData.certifications || ''}
+          onChange={(value) => onChange('certifications', value)}
+          type="text"
+          locked={isLocked?.('certifications')}
+          onToggleLock={onToggleLock ? () => onToggleLock('certifications') : undefined}
+          dict={dict}
         />
       </div>
     </section>

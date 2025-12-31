@@ -32,7 +32,17 @@
       "fat": "Fat",
       "sodium": "Sodium",
       "saturatedFat": "Saturated Fat",
-      "lastUpdate": "Last update"
+      "lastUpdate": "Last update",
+      "hfsScore": "HFS",
+      "excellent": "Excellent",
+      "good": "Good",
+      "needsImprovement": "Needs Improvement",
+      "notCalculated": "Not Calculated",
+      "typicalPortion": "Typical Portion",
+      "portionSizeDeclared": "Portion size as declared on package",
+      "ingredients": "Ingredients",
+      "price": "Price",
+      "manualEntry": "Manual Entry"
     },
     "manage": {
       "title": "Manage Library",
@@ -109,7 +119,17 @@
       "deleteSuccess": "Food item deleted successfully",
       "deleteError": "Failed to delete food item",
       "rescanSuccess": "Image rescanned successfully",
-      "rescanError": "Failed to rescan image"
+      "rescanError": "Failed to rescan image",
+      "sectionMetadata": "Metadata",
+      "labelLocation": "Location",
+      "labelPrice": "Price",
+      "labelABV": "ABV (%) - Alcohol by Volume",
+      "labelCertifications": "Certifications",
+      "labelHfsVersion": "HFS Version",
+      "imageAltReference": "Product image reference",
+      "imageAltPreview": "Image preview",
+      "lockFieldTooltip": "Lock field (prevent auto-update)",
+      "unlockFieldTooltip": "Unlock field (allow auto-update)"
     },
     "nutrition": {
       "factsTitle": "Nutrition Facts",
@@ -142,5 +162,12 @@
       "alcohol": "Alcoholic Drink",
       "sweet": "Sweet",
       "ingredient": "Ingredient / Seasoning"
+    },
+    "hfs": {
+      "notCalculated": "HFS not calculated.",
+      "noIngredients": "No ingredients provided.",
+      "noCalories": "Calories data not provided.",
+      "calculationError": "Error calculating HFS score. Please check the entered values.",
+      "noIngredientsError": "No ingredients"
     }
   }

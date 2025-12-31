@@ -7,6 +7,7 @@ export interface Food {
   brand?: string;
   category?: string;
   hfs: number; // Health Food Score (0-10)
+  hfs_version?: string; // HFS calculation version (v1, v2)
   
   // Image URLs
   front_photo_url?: string;

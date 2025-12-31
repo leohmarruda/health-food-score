@@ -24,6 +24,11 @@ const initialState: FoodFormData = {
   nutrition_raw: '',
   declared_special_nutrients: '',
   declared_processes: '',
+  location: '',
+  price: undefined,
+  abv_percentage: undefined,
+  certifications: '',
+  hfs_version: 'v2',
   last_update: ''
 };
 

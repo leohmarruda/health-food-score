@@ -131,7 +131,7 @@ export default function NewFood() {
                   <img 
                     src={URL.createObjectURL(files[slot.id] as File)} 
                     className="w-full h-full object-cover rounded-theme border border-text-main/10"
-                    alt="Preview"
+                    alt={dict?.edit?.imageAltPreview || 'Image preview'}
                   />
                   <button 
                     onClick={() => setFiles(prev => ({ ...prev, [slot.id]: null }))}

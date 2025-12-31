@@ -20,10 +20,11 @@ STEP 1: EXTRACTION (Raw Data)
 - "nutrition_raw": Transcribe the nutrition table data exactly as written (with cells separated by | also for line breaks).
 - "declared_special_nutrients": Extract claims like 'Enriched with Vit D', 'Contains 5mg Zinc' (separated by comma)
 - "declared_processes": Extract processing information like 'frito', 'assado', 'reconstituído', 'ultraprocessado certificado' (separated by comma)
+- "certifications": Extract any certifications found in the image, separated by comma
 - "abv_percentage": If alcoholic, look for ABV (teor alcoólico).
 STEP 2: PROCESSING
 - Format: Use a PERIOD (.) as the decimal separator.
-- "ingredients_list": parse the different ingredients into a string array
+- "ingredients_list": replace the last " e " by comma and parse ingredients_raw separating by comma into a string array
 - "fermentation_type": If clearly a fermented food which one among: nenhum / iogurte / kefir / queijo tradicional / pão fermentação natural / outro
 - If there are multiple columns for different portion sizes, use the largest one.
 
@@ -37,6 +38,7 @@ RETURN ONLY VALID JSON:
   "nutrition_raw": "string",
   "declared_special_nutrients": "string",
   "declared_processes": "string",
+  "certifications": "string",
   "abv_percentage": "float",
   "ingredients_list": "string[]",
   "fermentation_type": "string",

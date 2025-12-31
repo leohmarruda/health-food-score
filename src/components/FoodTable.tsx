@@ -1,4 +1,5 @@
 import { Food } from '@/types/food';
+import HFSLabel from '@/components/HFSLabel';
 
 interface FoodTableProps {
   foods: Food[];
@@ -15,14 +16,6 @@ export default function FoodTable({ foods, onFoodClick, dict, sortConfig, onSort
     return sortConfig.order === 'asc' 
       ? <span className="ml-1 text-primary text-[10px]">▲</span> 
       : <span className="ml-1 text-primary text-[10px]">▼</span>;
-  };
-
-  // Get HFS score color based on value
-  const getHFSColor = (score: number) => {
-    if (score >= 4) return 'text-green-500 bg-green-500/10 border-green-500/20';
-    if (score >= 2.5) return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
-    if (score < 0) return 'text-text-main/40 bg-text-main/5 border-text-main/10';
-    return 'text-red-500 bg-red-500/10 border-red-500/20';
   };
 
   return (
@@ -62,9 +55,7 @@ export default function FoodTable({ foods, onFoodClick, dict, sortConfig, onSort
             >
               <td className="px-4 py-3 font-medium text-primary group-hover:underline">{food.name}</td>
               <td className="px-4 py-3 text-center">
-                <span className={`inline-flex items-center justify-center w-10 h-6 rounded text-[11px] font-black border ${getHFSColor(food.hfs ?? 0)}`}>
-                  {food.hfs != null && food.hfs >= 0 ? food.hfs.toFixed(1) : '—'}
-                </span>
+                <HFSLabel food={food} variant="table" />
               </td>
 
               <td className="px-4 py-3 text-text-main/70">{food.brand || '—'}</td>

@@ -10,6 +10,7 @@ import ExtraDataSection from '@/components/forms/ExtraDataSection';
 import ImageGallery from '@/components/forms/ImageGallery';
 import NutritionFactsSection from '@/components/forms/NutritionFactsSection';
 import { useFoodForm } from '@/hooks/useFoodForm';
+import { useLockedFields } from '@/hooks/useLockedFields';
 import { useSaveFood } from '@/hooks/useSaveFood';
 import { getDictionary } from '@/lib/get-dictionary';
 import { supabase } from '@/lib/supabase';
@@ -32,6 +33,8 @@ export default function EditFood() {
     setFormData,
     setOriginalData
   } = useFoodForm();
+
+  const { isLocked, toggleLock } = useLockedFields();
 
   // State
   const [loading, setLoading] = useState(true);
@@ -135,6 +138,7 @@ export default function EditFood() {
           foodId={id as string}
           onImageUpdate={updateImage}
           onFormDataUpdate={updateFormData}
+          lockedFields={isLocked}
         />
         <div className="lg:w-2/3 bg-card p-8 rounded-theme shadow-sm border border-text-main/10">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-text-main/10">
@@ -157,14 +161,28 @@ export default function EditFood() {
           </div>
 
           <form onSubmit={handleSave} className="space-y-8">
-            <BasicInfoSection formData={formData} dict={dict} onChange={updateField} />
+            <BasicInfoSection 
+              formData={formData} 
+              dict={dict} 
+              onChange={updateField}
+              isLocked={isLocked}
+              onToggleLock={toggleLock}
+            />
             <NutritionFactsSection
               formData={formData}
               dict={dict}
               isDirty={dirty}
               onChange={updateField}
+              isLocked={isLocked}
+              onToggleLock={toggleLock}
             />
-            <ExtraDataSection formData={formData} dict={dict} onChange={updateField} />
+            <ExtraDataSection 
+              formData={formData} 
+              dict={dict} 
+              onChange={updateField}
+              isLocked={isLocked}
+              onToggleLock={toggleLock}
+            />
 
             <div className="border-t border-text-main/10 pt-8 mt-8">
               <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -200,7 +218,7 @@ export default function EditFood() {
                 </button>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-red-500/20">
+              <div className="mt-3 pt-3">
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}

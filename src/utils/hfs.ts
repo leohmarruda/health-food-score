@@ -1,26 +1,55 @@
 import { FoodFormData } from '@/types/food';
 
-export function checkHFSInput(formData: FoodFormData): boolean {
-    if (!formData.name?.trim() || !(formData.brand ?? '').trim()) 
-        return false;
-    return true;
+interface CheckHFSInputResponse {
+  success: boolean;
+  warnings?: string[];
+}
+
+export function checkHFSInput(formData: FoodFormData, version: string = 'v2', dict?: any): CheckHFSInputResponse {
+  const t = dict?.hfs || {};
+  
+  if (!formData.ingredient_list?.length) 
+      return { 
+        success: false,
+        warnings: [
+          t.notCalculated || "HFS not calculated.",
+          t.noIngredients || "No ingredients provided."
+        ]
+      };
+  if (!formData.energy_kcal) 
+    return { 
+      success: false,
+      warnings: [
+        t.notCalculated || "HFS not calculated.",
+        t.noCalories || "Calories data not provided."
+      ]
+    };
+  return { 
+    success: true
+  };
 }
 
 interface HFSResponse {
     success: boolean;
     hfs_score: number;
+    hfs_version: string;
     confidence: number;
     reasoning?: string;
     error?: string;
   }
 
-export async function calculateHFS(formData: FoodFormData): Promise<HFSResponse> {
+export async function calculateHFS(formData: FoodFormData, version: string = 'v2', dict?: any): Promise<HFSResponse> {
   // Bypass API call - return default score
   // TODO: Re-enable API call when ready
+  // Version parameter will be used when API is re-enabled
+  const t = dict?.hfs || {};
+  const error_msg = formData.ingredient_list?.join(', ') || (t.noIngredientsError || 'No ingredients');
   return { 
     success: true,
     hfs_score: -1,
-    confidence: 1 
+    hfs_version: version,
+    confidence: 1,
+    error: error_msg
   };
 
   // Original API call code (commented out):
