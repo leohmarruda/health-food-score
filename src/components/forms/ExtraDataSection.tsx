@@ -5,7 +5,7 @@ import type { FoodFormData } from '@/types/food';
 interface ExtraDataSectionProps {
   formData: FoodFormData;
   dict: any;
-  onChange: (field: keyof FoodFormData, value: string | string[]) => void;
+  onChange: (field: keyof FoodFormData, value: string | string[] | any) => void;
   isLocked?: (field: string) => boolean;
   onToggleLock?: (field: string) => void;
 }
@@ -66,16 +66,46 @@ export default function ExtraDataSection({
           />
 
           <FormTextarea
-            label={dict?.pages?.edit?.labelSpecialNutrients || 'Declared Special Nutrients'}
-            value={formData.declared_special_nutrients || ''}
-            onChange={(value) => onChange('declared_special_nutrients', value)}
+            label={dict?.pages?.edit?.labelNutritionParsed || 'Nutritional Information (processed)'}
+            value={formData.nutrition_parsed ? JSON.stringify(formData.nutrition_parsed, null, 2) : ''}
+            onChange={(value) => {
+              try {
+                const parsed = value ? JSON.parse(value) : null;
+                onChange('nutrition_parsed', parsed);
+              } catch (e) {
+                // Invalid JSON, keep as string for now
+              }
+            }}
             rows={3}
-            placeholder={dict?.pages?.edit?.placeholderSpecialNutrients || "E.g. Vitamins, minerals..."}
-            locked={isLocked?.('declared_special_nutrients')}
-            onToggleLock={onToggleLock ? () => onToggleLock('declared_special_nutrients') : undefined}
+            placeholder={dict?.pages?.edit?.placeholderNutritionParsed || 'JSON format...'}
+            helperText={dict?.pages?.edit?.helperNutritionParsed || 'Enter nutrition_parsed data in JSON format'}
+            locked={isLocked?.('nutrition_parsed')}
+            onToggleLock={onToggleLock ? () => onToggleLock('nutrition_parsed') : undefined}
             dict={dict}
           />
         </div>
+
+        <FormTextarea
+          label={dict?.pages?.edit?.labelSpecialNutrients || 'Declared Special Nutrients'}
+          value={formData.declared_special_nutrients || ''}
+          onChange={(value) => onChange('declared_special_nutrients', value)}
+          rows={3}
+          placeholder={dict?.pages?.edit?.placeholderSpecialNutrients || "E.g. Vitamins, minerals..."}
+          locked={isLocked?.('declared_special_nutrients')}
+          onToggleLock={onToggleLock ? () => onToggleLock('declared_special_nutrients') : undefined}
+          dict={dict}
+        />
+
+        <FormTextarea
+          label={dict?.pages?.edit?.labelWarnings || 'Declared Warnings'}
+          value={formData.declared_warnings || ''}
+          onChange={(value) => onChange('declared_warnings', value)}
+          rows={3}
+          placeholder={dict?.pages?.edit?.placeholderWarnings || "E.g. Contains gluten, contains lactose..."}
+          locked={isLocked?.('declared_warnings')}
+          onToggleLock={onToggleLock ? () => onToggleLock('declared_warnings') : undefined}
+          dict={dict}
+        />
 
         <FormField
           label={dict?.pages?.edit?.labelProcesses || 'Declared Processes (e.g., Pasteurized, Smoked)'}

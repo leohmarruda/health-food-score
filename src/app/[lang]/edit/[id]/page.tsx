@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import ConfirmModal from '@/components/ConfirmModal';
+import HFSScoresModal from '@/components/HFSScoresModal';
 import Spinner from '@/components/Spinner';
 import BasicInfoSection from '@/components/forms/BasicInfoSection';
 import ExtraDataSection from '@/components/forms/ExtraDataSection';
@@ -41,6 +42,12 @@ export default function EditFood() {
   const [dict, setDict] = useState<any>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showHFSScoresModal, setShowHFSScoresModal] = useState(false);
+  const [hfsScores, setHfsScores] = useState<any>(null);
+  const [hfsTotalScore, setHfsTotalScore] = useState<number | undefined>(undefined);
+  const [servingSize, setServingSize] = useState<number | undefined>(undefined);
+  const [servingUnit, setServingUnit] = useState<string | undefined>(undefined);
+  const [density, setDensity] = useState<number | undefined>(undefined);
 
   // Data fetching
   const fetchLatestData = async () => {
@@ -92,7 +99,19 @@ export default function EditFood() {
   // Event handlers
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveFood(formData);
+    try {
+      const result = await saveFood(formData);
+      if (result && result.scores) {
+        setHfsScores(result.scores);
+        setHfsTotalScore(result.score);
+        setServingSize(result.servingSize);
+        setServingUnit(result.servingUnit);
+        setDensity(result.density);
+        setShowHFSScoresModal(true);
+      }
+    } catch (error) {
+      // Error already handled by toast
+    }
   };
 
   const handleCancelClick = () => {
@@ -199,7 +218,7 @@ export default function EditFood() {
 
                 <button
                   type="submit"
-                  disabled={isSaving || !dirty}
+                  disabled={isSaving || (!dirty && formData.hfs != null)}
                   className="flex-1 px-8 py-3 bg-primary text-white rounded-theme font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
                 >
                   {isSaving ? (
@@ -262,6 +281,16 @@ export default function EditFood() {
         confirmLabel={t.btnDeleteConfirm || 'Yes, Delete'}
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteModal(false)}
+        dict={dict}
+      />
+      <HFSScoresModal
+        isOpen={showHFSScoresModal}
+        scores={hfsScores || {}}
+        totalScore={hfsTotalScore}
+        servingSize={servingSize}
+        servingUnit={servingUnit}
+        density={density}
+        onClose={() => setShowHFSScoresModal(false)}
         dict={dict}
       />
     </div>

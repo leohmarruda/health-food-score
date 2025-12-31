@@ -16,11 +16,13 @@ export async function POST(req: Request) {
 Task: Extract and process nutritional data from product images.
 STEP 1: EXTRACTION (Raw Data)
 - Extract "product_name", "brand", and "portion_size_value" (e.g., 30) and "portion_unit" (e.g., g, ml, unit)
+- "NOVA": 1: unprocessed or minimally processed; 2: processed culinary ingredients; 3: processed foods; 4: ultra-processed foods.
 - "ingredients_raw": Transcribe the full list of ingredients exactly as written
 - "nutrition_raw": Transcribe the nutrition table data exactly as written (with cells separated by | also for line breaks)
 - "declared_special_nutrients": Extract claims like 'Enriched with Vit D', 'Contains 5mg Zinc' (separated by comma)
 - "declared_processes": Extract processing information like 'frito', 'assado', 'reconstituído', 'ultraprocessado certificado' (separated by comma)
-- "certifications": Extract any certifications found in the image, separated by comma
+- "declared_warnings": Extract warnings such as 'contém glúten', 'contém lactose', 'contém açúcar', 'contém alérgenos' (separated by comma)
+- "certifications": Extract any certifications found in the image, separated by comma (vegan, organic, gluten-free, etc.)
 - "abv_percentage": If alcoholic, look for ABV (teor alcoólico)
 STEP 2: PROCESSING
 - Format: Use a PERIOD (.) as the decimal separator.
@@ -33,26 +35,83 @@ RETURN ONLY VALID JSON:
   "product_name": "string",
   "brand": "string",
   "ingredients_raw": "string",
-  "portion_size_value": number,
-  "portion_unit": "string",
+  "ingredients_list": ["item1", "item2"],
   "nutrition_raw": "string",
-  "nutrition_parsed": {
-    "energy_kcal": number,
-    "carbs_total_g": number,
-    "protein_g": number,
-    "fat_total_g": number,
-    "sodium_mg": number,
-    "fiber_g": number,
-    "saturated_fat_g": number,
-    "trans_fat_g": number
-  },
-  "declared_special_nutrients": "string",
-  "declared_processes": "string",
-  "declared_warnings": "string",
-  "certifications": "string",
-  "abv_percentage": "float",
-  "ingredients_list": "string[]",
+  "NOVA": number,
+  "declared_special_nutrients": ["nutrient 1 (amount)", "nutrient 2 (amount)"],
+  "declared_processes": ["process 1", "process 2"],
+  "declared_warnings": ["warning 1", "warning 2"],
+  "certifications": ["certification 1", "certification 2"],
   "fermentation_type": "string"
+  "nutrition_parsed": {
+    "metadata": {
+      "serving_size": number,
+      "serving_size_unit": "string",
+      "serving_description": "Ex: 1 xícara, 2 fatias",
+      "servings_per_container": number
+    },
+    "energy_kcal": number,
+    "carbohydrates": {
+      "total_carbs_g": number,
+      "sugars_total_g": number,
+      "sugars_added_g": number,
+      "polyols_g": number,
+      "starch_g": number
+    },
+    "proteins": {
+      "total_proteins_g": number,
+      "amino_acid_profile": boolean
+    },
+    "fats": {
+      "total_fats_g": number,
+      "saturated_fats_g": number,
+      "trans_fats_g": number,
+      "monounsaturated_fats_g": number,
+      "polyunsaturated_fats_g": number,
+      "cholesterol_mg": number
+    },
+    "fiber": {
+      "total_fiber_g": number,
+      "soluble_fiber_g": number,
+      "insoluble_fiber_g": number
+    },
+    "minerals_mg": {
+      "barium_mg": number,
+      "bicarbonate_mg": number,
+      "borate_mg": number,
+      "bromide_mg": number,
+      "calcium_mg": number,
+      "chloride_mg": number,
+      "fluoride_mg": number,
+      "iron_mg": number,
+      "magnesium_mg": number,
+      "nitrate_mg": number
+      "phosphate_mg": number,
+      "potassium_mg": number,
+      "sulfate_mg": number,
+      "sodium_mg": number,
+      "strontium_mg": number,
+      "zinc_mg": number
+    },
+    "vitamins": {
+      "vitamin_a_mcg": number,
+      "vitamin_b1_mg": number,
+      "vitamin_b2_mg": number,
+      "vitamin_b3_mg": number,
+      "vitamin_b5_mg": number,
+      "vitamin_b6_mg": number,
+      "vitamin_b5_mg": number,
+      "vitamin_b7_mcg": number,
+      "vitamin_b9_mcg": number,
+      "vitamin_b11_mcg": number,
+      "vitamin_b12_mcg": number,
+      "vitamin_c_mg": number,
+      "vitamin_d_mcg": number,
+      "vitamin_e_mg": number,
+      "vitamin_k_mcg": number
+    },
+    "abv_percentage": "float"
+  }
 }`
         },
         {

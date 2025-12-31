@@ -9,7 +9,7 @@ export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
         {food.front_photo_url ? (
           <img 
             src={food.front_photo_url} 
-            alt={food.name} 
+            alt={food.product_name} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
@@ -22,7 +22,7 @@ export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
       <div className="p-4">
         <div className="flex justify-between items-start gap-2">
           <h3 className="font-bold text-lg capitalize text-text-main truncate">
-            {food.name || 'Unknown Food'}
+            {food.product_name || 'Unknown Food'}
           </h3>
           <HFSLabel food={food} variant="card" />
         </div>

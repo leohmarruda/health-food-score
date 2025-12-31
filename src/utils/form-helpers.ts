@@ -39,8 +39,8 @@ export function extractImageUrls(data: Food): Record<string, string> {
  * Validates required form fields
  */
 export function validateFormData(data: FoodFormData): { valid: boolean; error?: string } {
-  if (!data.name || !data.name.trim()) {
-    return { valid: false, error: 'Name is required.' };
+  if (!data.product_name || !data.product_name.trim()) {
+    return { valid: false, error: 'Product name is required.' };
   }
   return { valid: true };
 }

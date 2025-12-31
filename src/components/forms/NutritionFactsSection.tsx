@@ -12,8 +12,8 @@ interface NutritionFactsSectionProps {
 }
 
 const NUTRITION_FIELDS = [
-  { labelKey: 'portion', field: 'portion_size_value', type: 'number' as const },
-  { labelKey: 'unit', field: 'portion_unit', type: 'text' as const },
+  { labelKey: 'serving', field: 'serving_size_value', type: 'number' as const },
+  { labelKey: 'unit', field: 'serving_size_unit', type: 'text' as const },
   { labelKey: 'calories', field: 'energy_kcal', type: 'number' as const },
   { labelKey: 'protein', field: 'protein_g', type: 'number' as const },
   { labelKey: 'carbs', field: 'carbs_total_g', type: 'number' as const },
@@ -92,6 +92,18 @@ export default function NutritionFactsSection({
             <option value="v2">v2</option>
           </select>
         </div>
+        {/* NOVA Classification */}
+        <FormField
+          label={dict?.pages?.edit?.labelNOVA || 'NOVA'}
+          name="NOVA"
+          value={formData.NOVA ?? ''}
+          onChange={(value) => onChange('NOVA', value)}
+          type="number"
+          step="1"
+          locked={isLocked?.('NOVA')}
+          onToggleLock={onToggleLock ? () => onToggleLock('NOVA') : undefined}
+          dict={dict}
+        />
       </div>
     </section>
   );

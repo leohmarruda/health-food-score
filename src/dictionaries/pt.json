@@ -69,13 +69,21 @@
       "labelHfsVersion": "Versão HFS",
       "labelIngredientsList": "Lista de Ingredientes (processada)",
       "labelIngredientsRaw": "Lista de Ingredientes (texto bruto)",
+      "labelCategory": "Categoria",
+      "labelCategorySelect": "Selecione categoria...",
       "labelLocation": "Localização",
       "labelName": "Nome do Produto*",
+      "labelNOVA": "NOVA",
+      "labelNutritionParsed": "Informação Nutricional (processada)",
       "labelNutritionRaw": "Informação Nutricional (texto bruto)",
       "labelPrice": "Preço",
+      "placeholderNutritionParsed": "Formato JSON...",
+      "helperNutritionParsed": "Digite os dados nutrition_parsed em formato JSON",
       "labelProcesses": "Processos Declarados",
       "labelSpecialNutrients": "Nutrientes Especiais",
+      "labelWarnings": "Avisos Declarados",
       "lastUpdatedLabel": "Última Atualização",
+      "placeholderWarnings": "Ex. Contém glúten, contém lactose...",
       "loadError": "Falha ao carregar dados mais recentes",
       "placeholderIngredientList": "Ingrediente 1, Ingrediente 2, ...",
       "placeholderSpecialNutrients": "Ex. Vitaminas, minerais...",
@@ -181,11 +189,29 @@
     "snacks": "Salgado",
     "sweet": "Doce"
   },
-  "hfs": {
-    "calculationError": "Erro ao calcular o score HFS. Verifique os valores inseridos.",
-    "noCalories": "Dados de calorias não fornecidos.",
-    "noIngredients": "Nenhum ingrediente fornecido.",
-    "noIngredientsError": "Nenhum ingrediente",
-    "notCalculated": "HFS não calculado."
-  }
+      "hfs": {
+        "calculationError": "Erro ao calcular o score HFS. Verifique os valores inseridos.",
+        "noCalories": "Dados de calorias não fornecidos.",
+        "noIngredients": "Nenhum ingrediente fornecido.",
+        "noIngredientsError": "Nenhum ingrediente",
+        "noNOVA": "Dados de NOVA não fornecidos.",
+        "notCalculated": "HFS não calculado."
+      },
+      "hfsScores": {
+        "title": "Scores HFS",
+        "totalScore": "Score HFS Total",
+        "portionInfo": "Informações da Porção",
+        "servingSize": "Tamanho da Porção",
+        "servingUnit": "Unidade da Porção",
+        "density": "Densidade",
+        "parametersSubtitle": "Parâmetros (calculados para 100g)",
+        "S1": "Açúcares (S1)",
+        "S2": "Fibras (S2)",
+        "S3": "Perfil de gorduras (S3)",
+        "S4": "Densidade calórica (S4)",
+        "S5": "Proteína (S5)",
+        "S6": "Sódio (S6)",
+        "S7": "Grau de processamento (S7)",
+        "S8": "Aditivos (S8)"
+      }
 }

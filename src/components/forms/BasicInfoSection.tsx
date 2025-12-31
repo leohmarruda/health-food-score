@@ -22,12 +22,12 @@ export default function BasicInfoSection({
       <div className="grid grid-cols-2 gap-4">
         <FormField
           label={dict?.pages?.edit?.labelName || 'Product Name*'}
-          name="name"
-          value={formData.name || ''}
-          onChange={(value) => onChange('name', value)}
+          name="product_name"
+          value={formData.product_name || ''}
+          onChange={(value) => onChange('product_name', value)}
           required={true}
-          locked={isLocked?.('name')}
-          onToggleLock={onToggleLock ? () => onToggleLock('name') : undefined}
+          locked={isLocked?.('product_name')}
+          onToggleLock={onToggleLock ? () => onToggleLock('product_name') : undefined}
           dict={dict}
         />
         <FormField
@@ -60,6 +60,21 @@ export default function BasicInfoSection({
           onToggleLock={onToggleLock ? () => onToggleLock('price') : undefined}
           dict={dict}
         />
+        <div>
+          <label className="block text-xs font-bold text-text-main/70 mb-1">
+            {dict?.pages?.edit?.labelCategory || 'Category'}
+          </label>
+          <select
+            value={formData.category || ''}
+            onChange={(e) => onChange('category', e.target.value)}
+            className="w-full bg-background border border-text-main/20 text-text-main p-2 rounded-theme focus:outline-none focus:border-primary h-[42px]"
+          >
+            <option value="">{dict?.pages?.edit?.labelCategorySelect || 'Select category...'}</option>
+            {dict?.categories && Object.entries(dict.categories).map(([key, value]) => (
+              <option key={key} value={key}>{value as string}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </section>
   );

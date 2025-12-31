@@ -94,9 +94,9 @@ export default function ImageGallery({
       // Filter out locked fields from update
       const updateData: Partial<FoodFormData> = {};
       const fieldsToUpdate: (keyof FoodFormData)[] = [
-        'name', 'brand', 'portion_size_value', 'portion_unit',
+        'product_name', 'brand', 'category', 'serving_size_value', 'serving_size_unit',
         'ingredients_raw', 'ingredients_list', 'nutrition_raw',
-        'declared_special_nutrients', 'declared_processes', 'certifications',
+        'declared_special_nutrients', 'declared_processes', 'declared_warnings', 'certifications',
         'abv_percentage', 'energy_kcal', 'protein_g', 'carbs_total_g',
         'fat_total_g', 'sodium_mg', 'fiber_g', 'saturated_fat_g', 'trans_fat_g'
       ];

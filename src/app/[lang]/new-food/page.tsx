@@ -68,33 +68,36 @@ export default function NewFood() {
 
       // Extract nutrition data from nutrition_parsed object
       const nutritionParsed = aiData.nutrition_parsed || {};
+      const metadata = nutritionParsed.metadata || {};
 
       // Save to database and get ID
       setStatus(dict?.pages?.addFood?.statusSave || 'Saving to database...');
       const { data: newFood, error: dbError } = await supabase
         .from('foods')
         .insert([{
-          name: aiData.product_name || '',
+          product_name: aiData.product_name || '',
           brand: aiData.brand || '',
           ingredients_raw: aiData.ingredients_raw || '',
           ingredients_list: aiData.ingredients_list || [],
           nutrition_raw: aiData.nutrition_raw || '',
           nutrition_parsed: nutritionParsed,
-          declared_special_nutrients: aiData.declared_special_nutrients || '',
-          declared_processes: aiData.declared_processes || '',
-          certifications: aiData.certifications || '',
-          abv_percentage: aiData.abv_percentage ? parseFloat(aiData.abv_percentage) : null,
+          // NOVA: aiData.NOVA ? parseInt(aiData.NOVA) : null, // TODO: Uncomment when NOVA column is added to database
+          declared_special_nutrients: Array.isArray(aiData.declared_special_nutrients) ? aiData.declared_special_nutrients.join(', ') : (aiData.declared_special_nutrients || ''),
+          declared_processes: Array.isArray(aiData.declared_processes) ? aiData.declared_processes.join(', ') : (aiData.declared_processes || ''),
+          declared_warnings: Array.isArray(aiData.declared_warnings) ? aiData.declared_warnings.join(', ') : (aiData.declared_warnings || ''),
+          certifications: Array.isArray(aiData.certifications) ? aiData.certifications.join(', ') : (aiData.certifications || ''),
+          abv_percentage: nutritionParsed.abv_percentage ? parseFloat(nutritionParsed.abv_percentage) : null,
           fermentation_type: aiData.fermentation_type || null,
-          portion_size_value: aiData.portion_size_value ? parseFloat(aiData.portion_size_value) : 100,
-          portion_unit: aiData.portion_unit || 'g',
+          serving_size_value: metadata.serving_size || 100,
+          serving_size_unit: metadata.serving_size_unit || 'g',
           energy_kcal: nutritionParsed.energy_kcal ? parseFloat(nutritionParsed.energy_kcal) : 0,
-          protein_g: nutritionParsed.protein_g ? parseFloat(nutritionParsed.protein_g) : 0,
-          carbs_total_g: nutritionParsed.carbs_total_g ? parseFloat(nutritionParsed.carbs_total_g) : null,
-          fat_total_g: nutritionParsed.fat_total_g ? parseFloat(nutritionParsed.fat_total_g) : null,
-          sodium_mg: nutritionParsed.sodium_mg ? parseFloat(nutritionParsed.sodium_mg) : null,
-          fiber_g: nutritionParsed.fiber_g ? parseFloat(nutritionParsed.fiber_g) : null,
-          saturated_fat_g: nutritionParsed.saturated_fat_g ? parseFloat(nutritionParsed.saturated_fat_g) : null,
-          trans_fat_g: nutritionParsed.trans_fat_g ? parseFloat(nutritionParsed.trans_fat_g) : null,
+          protein_g: nutritionParsed.proteins?.total_proteins_g ? parseFloat(nutritionParsed.proteins.total_proteins_g) : null,
+          carbs_total_g: nutritionParsed.carbohydrates?.total_carbs_g ? parseFloat(nutritionParsed.carbohydrates.total_carbs_g) : null,
+          fat_total_g: nutritionParsed.fats?.total_fats_g ? parseFloat(nutritionParsed.fats.total_fats_g) : null,
+          sodium_mg: nutritionParsed.minerals_mg?.sodium_mg ? parseFloat(nutritionParsed.minerals_mg.sodium_mg) : null,
+          fiber_g: nutritionParsed.fiber?.total_fiber_g ? parseFloat(nutritionParsed.fiber.total_fiber_g) : null,
+          saturated_fat_g: nutritionParsed.fats?.saturated_fats_g ? parseFloat(nutritionParsed.fats.saturated_fats_g) : null,
+          trans_fat_g: nutritionParsed.fats?.trans_fats_g ? parseFloat(nutritionParsed.fats.trans_fats_g) : null,
           front_photo_url: urls.front_photo_url, 
           back_photo_url: urls.back_photo_url,
           nutrition_label_url: urls.nutrition_label_url,

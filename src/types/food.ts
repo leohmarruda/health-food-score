@@ -3,11 +3,13 @@
  */
 export interface Food {
   id: string;
-  name: string;
+  product_name: string; // Changed from 'name' to match database
   brand?: string;
   category?: string;
-  hfs: number; // Health Food Score (0-10)
+  hfs: number; // Health Food Score (0-100)
   hfs_version?: string; // HFS calculation version (v1, v2)
+  data_source?: string; // Default: 'label'
+  NOVA?: number; // NOVA classification (1-4)
   
   // Image URLs
   front_photo_url?: string;
@@ -26,8 +28,8 @@ export interface Food {
   trans_fat_g?: number;
   
   // Portion information
-  portion_size_value?: number;
-  portion_unit?: string;
+  serving_size_value?: number; // Changed from portion_size_value
+  serving_size_unit?: string; // Changed from portion_unit
   density?: number;
   
   // Raw data fields
@@ -35,20 +37,20 @@ export interface Food {
   ingredients_list?: string[]; // Array of parsed ingredients
   nutrition_raw?: string;
   nutrition_parsed?: Record<string, any>; // JSONB parsed nutrition data
-  declared_percentages?: number[]; // Array of declared percentages
+  declared_percentages?: string[]; // Array of declared percentages (changed to string[])
   
   // Processing and special information
   declared_special_nutrients?: string;
   declared_processes?: string;
+  declared_warnings?: string; // Added
   fermentation_type?: string;
+  certifications?: string;
   abv_percentage?: number; // Alcohol by volume percentage
   
   // Additional metadata
   website?: string;
   price?: number;
   location?: string;
-  certifications?: string;
-  data_source?: string; // Default: 'label'
   
   // Timestamps
   created_at?: string;

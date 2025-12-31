@@ -153,7 +153,7 @@ export default function ManageFoods() {
                     {food.front_photo_url ? (
                       <img 
                         src={food.front_photo_url} 
-                        alt={food.name}
+                        alt={food.product_name}
                         className="w-12 h-12 object-cover rounded"
                       />
                     ) : (
@@ -166,7 +166,7 @@ export default function ManageFoods() {
                     className="px-6 py-4 font-medium text-text-main cursor-pointer" 
                     onClick={() => handleFoodClick(food)}
                   >
-                    {food.name}
+                    {food.product_name}
                   </td>
                   <td 
                     className="px-6 py-4 text-text-main/70 cursor-pointer" 

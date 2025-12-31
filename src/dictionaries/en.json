@@ -69,13 +69,21 @@
       "labelHfsVersion": "HFS Version",
       "labelIngredientsList": "Ingredient list (parsed)",
       "labelIngredientsRaw": "Ingredient list (raw)",
+      "labelCategory": "Category",
+      "labelCategorySelect": "Select category...",
       "labelLocation": "Location",
       "labelName": "Product Name*",
+      "labelNOVA": "NOVA",
+      "labelNutritionParsed": "Nutritional Information (processed)",
       "labelNutritionRaw": "Nutritional info (raw)",
       "labelPrice": "Price",
+      "placeholderNutritionParsed": "JSON format...",
+      "helperNutritionParsed": "Enter nutrition_parsed data in JSON format",
       "labelProcesses": "Claimed processes",
       "labelSpecialNutrients": "Special nutrients",
+      "labelWarnings": "Declared Warnings",
       "lastUpdatedLabel": "Last Updated",
+      "placeholderWarnings": "E.g. Contains gluten, contains lactose...",
       "loadError": "Failed to load latest data",
       "placeholderIngredientList": "Ingredient 1, Ingredient 2, ...",
       "placeholderSpecialNutrients": "E.g. Vitamins, minerals...",
@@ -181,11 +189,29 @@
     "snacks": "Savory Snacks",
     "sweet": "Sweet"
   },
-  "hfs": {
-    "calculationError": "Error calculating HFS score. Please check the entered values.",
-    "noCalories": "Calories data not provided.",
-    "noIngredients": "No ingredients provided.",
-    "noIngredientsError": "No ingredients",
-    "notCalculated": "HFS not calculated."
-  }
+      "hfs": {
+        "calculationError": "Error calculating HFS score. Please check the entered values.",
+        "noCalories": "Calories data not provided.",
+        "noIngredients": "No ingredients provided.",
+        "noIngredientsError": "No ingredients",
+        "noNOVA": "NOVA data not provided.",
+        "notCalculated": "HFS not calculated."
+      },
+      "hfsScores": {
+        "title": "HFS Scores",
+        "totalScore": "Total HFS Score",
+        "portionInfo": "Portion Information",
+        "servingSize": "Serving Size",
+        "servingUnit": "Serving Unit",
+        "density": "Density",
+        "parametersSubtitle": "Parameters (calculated for 100g)",
+        "S1": "Sugars (S1)",
+        "S2": "Fiber (S2)",
+        "S3": "Fat Profile (S3)",
+        "S4": "Caloric Density (S4)",
+        "S5": "Protein (S5)",
+        "S6": "Sodium (S6)",
+        "S7": "Processing Degree (S7)",
+        "S8": "Additives (S8)"
+      }
 }

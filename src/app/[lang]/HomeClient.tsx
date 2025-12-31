@@ -12,7 +12,7 @@ import { downloadAsCSV } from '@/utils/export';
 import type { Food } from '@/types/food';
 
 type ViewMode = 'grid' | 'table';
-type SortKey = 'name' | 'energy_kcal' | 'protein_g' | 'hfs';
+type SortKey = 'product_name' | 'energy_kcal' | 'protein_g' | 'hfs';
 type SortOrder = 'asc' | 'desc';
 
 export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, lang: string, initialFoodId?: string }) {
@@ -214,14 +214,14 @@ export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, l
   // Computed values - uses home state which is preserved
   const processedFoods = useMemo(() => {
     const filtered = foods.filter((food) =>
-      food.name.toLowerCase().includes(searchTerm.toLowerCase())
+      food.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Grid view: sort alphabetically by name
     if (viewMode === 'grid') {
       return [...filtered].sort((a, b) => {
-        const aName = (a.name || '').toLowerCase();
-        const bName = (b.name || '').toLowerCase();
+        const aName = (a.product_name || '').toLowerCase();
+        const bName = (b.product_name || '').toLowerCase();
         return aName.localeCompare(bName);
       });
     }
@@ -238,7 +238,7 @@ export default function HomeClient({ dict, lang, initialFoodId }: { dict: any, l
   }, [foods, searchTerm, sortConfig, viewMode]);
 
   const filteredFoods = foods.filter((food) =>
-    food.name.toLowerCase().includes(searchTerm.toLowerCase())
+    food.product_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Event handlers

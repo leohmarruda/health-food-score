@@ -37,7 +37,7 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
         </button>
         <div className="md:w-5/12 bg-background p-6 overflow-y-auto border-r border-text-main/10 flex flex-col items-center">
           <div className="w-full h-48 bg-card rounded-theme mb-6 shadow-sm flex items-center justify-center p-4">
-            <img src={food.front_photo_url} className="max-h-full object-contain" alt={food.name} />
+            <img src={food.front_photo_url} className="max-h-full object-contain" alt={food.product_name} />
           </div>
           <div className="scale-90 origin-top">
                     <NutritionLabel 
@@ -55,7 +55,7 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
               <span className="text-xs font-bold text-primary uppercase tracking-widest">
                 {food.brand || t.noBrand || 'Generic'}
               </span>
-              <h2 className="text-3xl font-black text-text-main leading-tight">{food.name}</h2>
+              <h2 className="text-3xl font-black text-text-main leading-tight">{food.product_name}</h2>
               <p className="text-text-main/60 italic text-sm mt-1">
                 {(food.category && dict.categories) 
                   ? (dict.categories[food.category as keyof typeof dict.categories] || food.category)
@@ -107,7 +107,7 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
             </div>
 
             {/* Typical Portion */}
-            {(food.portion_size_value || food.portion_unit) && (
+            {(food.serving_size_value || food.serving_size_unit) && (
               <div className="p-4 bg-background rounded-theme border border-text-main/10">
                 <div className="flex items-center gap-2 mb-2">
                   <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ export default function FoodProfileModal({ food, isOpen, onClose, dict }: FoodPr
                   <span className="text-sm font-bold text-text-main uppercase">{t.typicalPortion || 'Typical Portion'}</span>
                 </div>
                 <p className="text-lg font-semibold text-text-main">
-                  {food.portion_size_value || 100}{food.portion_unit || 'g'}
+                  {food.serving_size_value || 100}{food.serving_size_unit || 'g'}
                 </p>
                 <p className="text-xs text-text-main/60 mt-1">
                   {t.portionSizeDeclared || 'Portion size as declared on package'}

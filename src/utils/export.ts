@@ -7,7 +7,7 @@ export const downloadAsCSV = (data: any[], fileName: string) => {
     // Map data to rows, using semicolon as delimiter (Brazilian Excel standard)
     const delimiter = ";";
     const rows = data.map(food => [
-      `"${(food.name || "").replace(/"/g, '""')}"`, // Escape quotes and handle null values
+      `"${(food.product_name || "").replace(/"/g, '""')}"`, // Escape quotes and handle null values
       `"${(food.brand || "").replace(/"/g, '""')}"`,
       food.energy_kcal ?? "",
       food.protein_g ?? "",

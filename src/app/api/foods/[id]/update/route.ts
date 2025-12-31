@@ -13,7 +13,7 @@ export async function PATCH(
     const { error } = await supabase
       .from('foods')
       .update({
-        name: body.name,
+        product_name: body.product_name,
         brand: body.brand,
         category: body.category,
         hfs: body.hfs,
@@ -25,18 +25,22 @@ export async function PATCH(
         fiber_g: body.fiber_g,
         saturated_fat_g: body.saturated_fat_g,
         trans_fat_g: body.trans_fat_g,
-        portion_size_value: body.portion_size_value,
-        portion_unit: body.portion_unit,
+        serving_size_value: body.serving_size_value,
+        serving_size_unit: body.serving_size_unit,
         ingredients_list: body.ingredients_list, 
         ingredients_raw: body.ingredients_raw, 
         nutrition_raw: body.nutrition_raw, 
         declared_special_nutrients: body.declared_special_nutrients, 
         declared_processes: body.declared_processes,
+        declared_warnings: body.declared_warnings,
         location: body.location,
         price: body.price,
         abv_percentage: body.abv_percentage,
+        density: body.density,
         certifications: body.certifications,
         hfs_version: body.hfs_version,
+        // NOVA: body.NOVA, // TODO: Uncomment when NOVA column is added to database
+        nutrition_parsed: body.nutrition_parsed,
         last_update: body.last_update        
       })
       .eq('id', id);

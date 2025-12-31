@@ -5,7 +5,7 @@ import type { FoodFormData } from '@/types/food';
 
 // Constants
 const initialState: FoodFormData = {
-  name: '',
+  product_name: '',
   brand: '',
   category: '',
   hfs: 0,
@@ -17,8 +17,8 @@ const initialState: FoodFormData = {
   fiber_g: 0,
   saturated_fat_g: 0,
   trans_fat_g: 0,
-  portion_size_value: 0,
-  portion_unit: 'g',
+  serving_size_value: 0,
+  serving_size_unit: 'g',
   ingredients_list: [],
   ingredients_raw: '',
   nutrition_raw: '',
@@ -29,6 +29,7 @@ const initialState: FoodFormData = {
   abv_percentage: undefined,
   certifications: '',
   hfs_version: 'v2',
+  NOVA: undefined,
   last_update: ''
 };
 
@@ -49,7 +50,7 @@ export function useFoodForm() {
     setImages(extractImageUrls(data));
   }, []);
 
-  const updateField = useCallback((field: keyof FoodFormData, value: string | string[]) => {
+  const updateField = useCallback((field: keyof FoodFormData, value: string | string[] | any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
