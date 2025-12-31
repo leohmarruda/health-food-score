@@ -27,13 +27,29 @@ export interface Food {
   // Portion information
   portion_size_value?: number;
   portion_unit?: string;
+  density?: number;
   
   // Raw data fields
   ingredients_raw?: string;
+  ingredients_list?: string[]; // Array of parsed ingredients
   nutrition_raw?: string;
-  declared_special_nutrients?: string;
+  nutrition_parsed?: Record<string, any>; // JSONB parsed nutrition data
+  declared_percentages?: number[]; // Array of declared percentages
   
-  // Metadata
+  // Processing and special information
+  declared_special_nutrients?: string;
+  declared_processes?: string;
+  fermentation_type?: string;
+  abv_percentage?: number; // Alcohol by volume percentage
+  
+  // Additional metadata
+  website?: string;
+  price?: number;
+  location?: string;
+  certifications?: string;
+  data_source?: string; // Default: 'label'
+  
+  // Timestamps
   created_at?: string;
   last_update?: string;
 }
@@ -53,6 +69,7 @@ export interface ImageTab {
   label: string;
   dbKey: keyof Food;
 }
+
 
 
 

@@ -1,12 +1,5 @@
 import Image from 'next/image';
-
-interface Food {
-  id: string;
-  name: string;
-  energy_kcal: number;
-  hfs: number;
-  front_photo_url: string;
-}
+import type { Food } from '@/types/food';
 
 export default function FoodCard({ food, dict }: { food: Food, dict: any }) {
   // Get HFS badge color styles

@@ -3,7 +3,7 @@ import type { FoodFormData } from '@/types/food';
 interface FormFieldProps {
   label: string;
   name: keyof FoodFormData;
-  value: string | number;
+  value: string | number | undefined;
   onChange: (value: string) => void;
   type?: 'text' | 'number';
   step?: string;
@@ -30,7 +30,7 @@ export default function FormField({
       <input
         type={type}
         step={type === 'number' ? step : undefined}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         required={required}
         className={`w-full bg-background border border-text-main/20 text-text-main p-2 rounded-theme ${className}`}

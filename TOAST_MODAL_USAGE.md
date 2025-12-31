@@ -75,3 +75,4 @@ All toast messages and modal content use translation keys from the dictionary fi
 4. **Consistent error handling**: All errors should show toast notifications, not just console.error
 5. **User feedback**: Every user action should provide feedback via toast or modal
 
+
