@@ -19,15 +19,15 @@ export default function Navbar() {
   // Derived values
   const navLinks = [
     { 
-      name: dict?.common?.library || 'Library', 
-      href: `/${lang}` 
+      name: dict?.components?.navbar?.library || 'Library', 
+      href: `/${lang}/home` 
     },
     { 
-      name: dict?.common?.addFood || 'Add Food', 
+      name: dict?.components?.navbar?.addFood || 'Add Food', 
       href: `/${lang}/new-food` 
     },
     { 
-      name: dict?.common?.manage || 'Manage', 
+      name: dict?.components?.navbar?.manage || 'Manage', 
       href: `/${lang}/manage` 
     },
   ];
@@ -47,7 +47,7 @@ export default function Navbar() {
         <div className="h-16 flex items-center justify-between gap-2 min-w-0">
           
           {/* Logo respeitando o idioma */}
-          <Link href={`/${lang}`} className="flex items-center gap-2 flex-shrink-0 min-w-0">
+          <Link href={`/${lang}/home`} className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <span className="text-lg sm:text-xl font-bold bg-primary text-white px-1.5 sm:px-2 py-1 rounded-theme">HFS</span>
             <span className="font-bold text-text-main hidden lg:block whitespace-nowrap">Healthy Food Score</span>
           </Link>
@@ -61,7 +61,7 @@ export default function Navbar() {
             <div className="h-6 w-[1px] bg-text-main/10" />
             <div className="flex gap-4 lg:gap-6">
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = pathname === link.href || (link.href.includes('/home') && pathname === `/${lang}`);
                 return (
                   <Link
                     key={link.href}
@@ -99,11 +99,11 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+          {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-text-main/10 py-2 space-y-1">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href.includes('/home') && pathname === `/${lang}`);
               return (
                 <Link
                   key={link.href}

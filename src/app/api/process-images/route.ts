@@ -36,20 +36,23 @@ RETURN ONLY VALID JSON:
   "portion_size_value": number,
   "portion_unit": "string",
   "nutrition_raw": "string",
+  "nutrition_parsed": {
+    "energy_kcal": number,
+    "carbs_total_g": number,
+    "protein_g": number,
+    "fat_total_g": number,
+    "sodium_mg": number,
+    "fiber_g": number,
+    "saturated_fat_g": number,
+    "trans_fat_g": number
+  },
   "declared_special_nutrients": "string",
   "declared_processes": "string",
+  "declared_warnings": "string",
   "certifications": "string",
   "abv_percentage": "float",
   "ingredients_list": "string[]",
-  "fermentation_type": "string",
-  "energy_kcal": number,
-  "carbs_total_g": number,
-  "protein_g": number,
-  "fat_total_g": number,
-  "sodium_mg": number,
-  "fiber_g": number,
-  "saturated_fat_g": number,
-  "trans_fat_g": number
+  "fermentation_type": "string"
 }`
         },
         {

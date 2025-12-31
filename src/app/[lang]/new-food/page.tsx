@@ -66,23 +66,35 @@ export default function NewFood() {
       setStatus(dict?.pages?.addFood?.statusAI || 'AI is extracting data...');
       const aiData = await processImages(Object.values(urls).filter(Boolean) as string[], 'full-scan');
 
+      // Extract nutrition data from nutrition_parsed object
+      const nutritionParsed = aiData.nutrition_parsed || {};
+
       // Save to database and get ID
       setStatus(dict?.pages?.addFood?.statusSave || 'Saving to database...');
       const { data: newFood, error: dbError } = await supabase
         .from('foods')
         .insert([{
-          name: aiData.product_name,
-          brand: aiData.brand,
-          ingredients_raw: aiData.ingredients_raw,
-          nutrition_raw: aiData.nutrition_raw,
-          declared_special_nutrients: aiData.declared_special_nutrients,
-          portion_size_value: parseFloat(aiData.portion_size_value) || 100,
+          name: aiData.product_name || '',
+          brand: aiData.brand || '',
+          ingredients_raw: aiData.ingredients_raw || '',
+          ingredients_list: aiData.ingredients_list || [],
+          nutrition_raw: aiData.nutrition_raw || '',
+          nutrition_parsed: nutritionParsed,
+          declared_special_nutrients: aiData.declared_special_nutrients || '',
+          declared_processes: aiData.declared_processes || '',
+          certifications: aiData.certifications || '',
+          abv_percentage: aiData.abv_percentage ? parseFloat(aiData.abv_percentage) : null,
+          fermentation_type: aiData.fermentation_type || null,
+          portion_size_value: aiData.portion_size_value ? parseFloat(aiData.portion_size_value) : 100,
           portion_unit: aiData.portion_unit || 'g',
-          energy_kcal: parseFloat(aiData.energy_kcal) || 0,
-          protein_g: parseFloat(aiData.protein_g) || 0,
-          carbs_total_g: parseFloat(aiData.carbs_total_g) || 0,
-          fat_total_g: parseFloat(aiData.fat_total_g) || 0,
-          sodium_mg: parseFloat(aiData.sodium_mg) || 0,
+          energy_kcal: nutritionParsed.energy_kcal ? parseFloat(nutritionParsed.energy_kcal) : 0,
+          protein_g: nutritionParsed.protein_g ? parseFloat(nutritionParsed.protein_g) : 0,
+          carbs_total_g: nutritionParsed.carbs_total_g ? parseFloat(nutritionParsed.carbs_total_g) : null,
+          fat_total_g: nutritionParsed.fat_total_g ? parseFloat(nutritionParsed.fat_total_g) : null,
+          sodium_mg: nutritionParsed.sodium_mg ? parseFloat(nutritionParsed.sodium_mg) : null,
+          fiber_g: nutritionParsed.fiber_g ? parseFloat(nutritionParsed.fiber_g) : null,
+          saturated_fat_g: nutritionParsed.saturated_fat_g ? parseFloat(nutritionParsed.saturated_fat_g) : null,
+          trans_fat_g: nutritionParsed.trans_fat_g ? parseFloat(nutritionParsed.trans_fat_g) : null,
           front_photo_url: urls.front_photo_url, 
           back_photo_url: urls.back_photo_url,
           nutrition_label_url: urls.nutrition_label_url,
