@@ -6,8 +6,11 @@ import { toast } from 'sonner';
 
 import ConfirmModal from '@/components/ConfirmModal';
 import FoodProfileModal from '@/components/FoodProfileModal';
+import SortIcon from '@/components/SortIcon';
 import { getDictionary } from '@/lib/get-dictionary';
 import { supabase } from '@/lib/supabase';
+import { useTableSort } from '@/hooks/useTableSort';
+import { useTableSelection } from '@/hooks/useTableSelection';
 import type { Food } from '@/types/food';
 
 export default function ManageFoods() {
@@ -22,14 +25,13 @@ export default function ManageFoods() {
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [sortConfig, setSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({
-    key: 'product_name',
-    order: 'asc'
-  });
 
   // Derived values
   const t = dict?.pages?.manage || {};
+
+  // Table hooks
+  const { sortConfig, handleSort, sortedData: sortedFoods } = useTableSort(foods, 'product_name', 'asc');
+  const { selectedIds, handleSelectAll, handleSelectItem, isAllSelected, hasSelection, clearSelection } = useTableSelection(foods, (food) => food.id);
 
   // Effects
   useEffect(() => {
@@ -65,76 +67,19 @@ export default function ManageFoods() {
     }
   }
 
-  // Sort handler
-  const handleSort = (key: string) => {
-    setSortConfig(prev => ({
-      key,
-      order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  // Sort foods based on sortConfig
-  const sortedFoods = [...foods].sort((a, b) => {
-    const aValue = a[sortConfig.key as keyof Food];
-    const bValue = b[sortConfig.key as keyof Food];
-    
-    if (aValue === null || aValue === undefined) return 1;
-    if (bValue === null || bValue === undefined) return -1;
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortConfig.order === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-    
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sortConfig.order === 'asc' ? aValue - bValue : bValue - aValue;
-    }
-    
-    return 0;
-  });
-
-  // Render sort icon
-  const SortIcon = ({ column }: { column: string }) => {
-    if (sortConfig.key !== column) return <span className="ml-1 opacity-30 text-[10px]">↕</span>;
-    return sortConfig.order === 'asc' 
-      ? <span className="ml-1 text-primary text-[10px]">▲</span> 
-      : <span className="ml-1 text-primary text-[10px]">▼</span>;
-  };
-
   // Event handlers
   const handleFoodClick = (food: Food) => {
     setSelectedFood(food);
     setIsModalOpen(true);
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(new Set(sortedFoods.map(f => f.id)));
-    } else {
-      setSelectedIds(new Set());
-    }
-  };
-
-  const handleSelectItem = (id: string, checked: boolean) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
-  };
-
   const confirmDeletion = () => {
-    if (selectedIds.size === 0) return;
+    if (!hasSelection) return;
     setShowDeleteModal(true);
   };
 
   async function handleDelete() {
-    if (selectedIds.size === 0) return;
+    if (!hasSelection) return;
   
     const idsToDelete = Array.from(selectedIds);
     const deletePromise = async () => {
@@ -154,7 +99,7 @@ export default function ManageFoods() {
       }
       
       setFoods(prev => prev.filter(f => !selectedIds.has(f.id)));
-      setSelectedIds(new Set());
+      clearSelection();
       return results.length;
     };
   
@@ -184,7 +129,7 @@ export default function ManageFoods() {
           </Link>
           <button
             onClick={confirmDeletion}
-            disabled={selectedIds.size === 0}
+            disabled={!hasSelection}
             className="bg-red-500 text-white px-4 py-2 rounded-theme text-sm hover:bg-red-600 transition font-medium disabled:bg-text-main/20 disabled:text-text-main/50 disabled:cursor-not-allowed"
           >
             {t.deleteSelected || 'Delete Selected'}
@@ -199,7 +144,7 @@ export default function ManageFoods() {
               <th className="px-6 py-3 text-text-main/70 font-bold w-16">
                 <input
                   type="checkbox"
-                  checked={selectedIds.size > 0 && selectedIds.size === sortedFoods.length}
+                  checked={isAllSelected}
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   className="w-4 h-4 cursor-pointer"
                 />
@@ -211,7 +156,7 @@ export default function ManageFoods() {
               >
                 <div className="flex items-center">
                   {t.name}
-                  <SortIcon column="product_name" />
+                  <SortIcon column="product_name" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th 
@@ -220,7 +165,7 @@ export default function ManageFoods() {
               >
                 <div className="flex items-center">
                   {dict?.components?.foodTable?.brand || 'Brand'}
-                  <SortIcon column="brand" />
+                  <SortIcon column="brand" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th 
@@ -229,7 +174,7 @@ export default function ManageFoods() {
               >
                 <div className="flex items-center">
                   {dict?.pages?.edit?.labelLocation || 'Location'}
-                  <SortIcon column="location" />
+                  <SortIcon column="location" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th className="px-6 py-3 text-right text-text-main/70 font-bold">{t.actions}</th>

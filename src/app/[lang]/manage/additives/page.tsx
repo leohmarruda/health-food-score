@@ -4,7 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import ConfirmModal from '@/components/ConfirmModal';
+import SortIcon from '@/components/SortIcon';
 import { getDictionary } from '@/lib/get-dictionary';
+import { useTableSort } from '@/hooks/useTableSort';
+import { useTableSelection } from '@/hooks/useTableSelection';
 
 interface FoodAdditive {
   name: string;
@@ -24,13 +27,8 @@ export default function ManageAdditives() {
   const [loading, setLoading] = useState(true);
   const [dict, setDict] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({
-    key: 'name',
-    order: 'asc'
-  });
   const [formData, setFormData] = useState<FoodAdditive>({
     name: '',
     category: '',
@@ -41,42 +39,9 @@ export default function ManageAdditives() {
   // Derived values
   const t = dict?.pages?.additives || {};
 
-  // Sort handler
-  const handleSort = (key: string) => {
-    setSortConfig(prev => ({
-      key,
-      order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  // Sort additives based on sortConfig
-  const sortedAdditives = [...additives].sort((a, b) => {
-    const aValue = a[sortConfig.key as keyof FoodAdditive];
-    const bValue = b[sortConfig.key as keyof FoodAdditive];
-    
-    if (aValue === null || aValue === undefined) return 1;
-    if (bValue === null || bValue === undefined) return -1;
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortConfig.order === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-    
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sortConfig.order === 'asc' ? aValue - bValue : bValue - aValue;
-    }
-    
-    return 0;
-  });
-
-  // Render sort icon
-  const SortIcon = ({ column }: { column: string }) => {
-    if (sortConfig.key !== column) return <span className="ml-1 opacity-30 text-[10px]">↕</span>;
-    return sortConfig.order === 'asc' 
-      ? <span className="ml-1 text-primary text-[10px]">▲</span> 
-      : <span className="ml-1 text-primary text-[10px]">▼</span>;
-  };
+  // Table hooks
+  const { sortConfig, handleSort, sortedData: sortedAdditives } = useTableSort(additives, 'name', 'asc');
+  const { selectedIds: selectedNames, handleSelectAll, handleSelectItem, isAllSelected, hasSelection, clearSelection } = useTableSelection(additives, (additive) => additive.name);
 
   // Effects
   useEffect(() => {
@@ -199,33 +164,13 @@ export default function ManageAdditives() {
     });
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedNames(new Set(sortedAdditives.map(a => a.name)));
-    } else {
-      setSelectedNames(new Set());
-    }
-  };
-
-  const handleSelectItem = (name: string, checked: boolean) => {
-    setSelectedNames(prev => {
-      const next = new Set(prev);
-      if (checked) {
-        next.add(name);
-      } else {
-        next.delete(name);
-      }
-      return next;
-    });
-  };
-
   const confirmDeletion = () => {
-    if (selectedNames.size === 0) return;
+    if (!hasSelection) return;
     setShowDeleteModal(true);
   };
 
   const handleDelete = async () => {
-    if (selectedNames.size === 0) return;
+    if (!hasSelection) return;
 
     const namesToDelete = Array.from(selectedNames);
     const deletePromise = async () => {
@@ -247,7 +192,7 @@ export default function ManageAdditives() {
       }
       
       setAdditives(prev => prev.filter(a => !selectedNames.has(a.name)));
-      setSelectedNames(new Set());
+      clearSelection();
       return results.length;
     };
 
@@ -288,7 +233,7 @@ export default function ManageAdditives() {
             </button>
             <button
               onClick={confirmDeletion}
-              disabled={selectedNames.size === 0}
+              disabled={!hasSelection}
               className="bg-red-500 text-white px-4 py-2 rounded-theme text-sm hover:bg-red-600 transition font-medium disabled:bg-text-main/20 disabled:text-text-main/50 disabled:cursor-not-allowed"
             >
               {t.deleteSelected || 'Delete Selected'}
@@ -383,9 +328,10 @@ export default function ManageAdditives() {
               <th className="px-6 py-3 text-text-main/70 font-bold w-16">
                 <input
                   type="checkbox"
-                  checked={selectedNames.size > 0 && selectedNames.size === sortedAdditives.length}
+                  checked={isAllSelected}
                   onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
+                  disabled={isAdding || isEditing !== null}
+                  className="w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </th>
               <th 
@@ -394,7 +340,7 @@ export default function ManageAdditives() {
               >
                 <div className="flex items-center">
                   {t.name || 'Name'}
-                  <SortIcon column="name" />
+                  <SortIcon column="name" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th 
@@ -403,7 +349,7 @@ export default function ManageAdditives() {
               >
                 <div className="flex items-center">
                   {t.category || 'Category'}
-                  <SortIcon column="category" />
+                  <SortIcon column="category" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th 
@@ -412,7 +358,7 @@ export default function ManageAdditives() {
               >
                 <div className="flex items-center">
                   {t.weight || 'Weight'}
-                  <SortIcon column="weight" />
+                  <SortIcon column="weight" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th 
@@ -421,7 +367,7 @@ export default function ManageAdditives() {
               >
                 <div className="flex items-center">
                   {t.regex || 'Regex'}
-                  <SortIcon column="regex" />
+                  <SortIcon column="regex" currentColumn={String(sortConfig.key)} order={sortConfig.order} />
                 </div>
               </th>
               <th className="px-6 py-3 text-right text-text-main/70 font-bold">{t.actions || 'Actions'}</th>
