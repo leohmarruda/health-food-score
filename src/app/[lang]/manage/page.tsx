@@ -22,7 +22,7 @@ export default function ManageFoods() {
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortConfig, setSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({
     key: 'product_name',
     order: 'asc'
@@ -103,35 +103,66 @@ export default function ManageFoods() {
   };
 
   // Event handlers
-  const confirmDeletion = (id: string) => {
-    setItemToDelete(id);
-    setShowDeleteModal(true);
-  };
-
   const handleFoodClick = (food: Food) => {
     setSelectedFood(food);
     setIsModalOpen(true);
   };
 
-  async function handleDelete() {
-    if (!itemToDelete) return;
-  
-    const deletePromise = async () => {
-      const res = await fetch(`/api/foods/${itemToDelete}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || t.deleteError || 'Failed to delete');
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(sortedFoods.map(f => f.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
       }
-      setFoods(prev => prev.filter(f => f.id !== itemToDelete));
-      return res;
+      return next;
+    });
+  };
+
+  const confirmDeletion = () => {
+    if (selectedIds.size === 0) return;
+    setShowDeleteModal(true);
+  };
+
+  async function handleDelete() {
+    if (selectedIds.size === 0) return;
+  
+    const idsToDelete = Array.from(selectedIds);
+    const deletePromise = async () => {
+      // Delete all selected items
+      const deletePromises = idsToDelete.map(id => 
+        fetch(`/api/foods/${id}`, { method: 'DELETE' })
+      );
+      
+      const results = await Promise.allSettled(deletePromises);
+      const errors = results
+        .map((result, index) => ({ result, id: idsToDelete[index] }))
+        .filter(({ result }) => result.status === 'rejected')
+        .map(({ id }) => id);
+      
+      if (errors.length > 0) {
+        throw new Error(t.deleteError || `Failed to delete ${errors.length} item(s)`);
+      }
+      
+      setFoods(prev => prev.filter(f => !selectedIds.has(f.id)));
+      setSelectedIds(new Set());
+      return results.length;
     };
   
     toast.promise(deletePromise(), {
-      loading: t.deleteLoading || 'Deleting food item and images...',
-      success: () => {
+      loading: t.deleteLoading || 'Deleting food items and images...',
+      success: (count) => {
         setShowDeleteModal(false);
-        setItemToDelete(null);
-        return t.deleteSuccess || 'Food item removed successfully!';
+        return t.deleteSuccess || `${count} food item(s) removed successfully!`;
       },
       error: (err) => {
         setShowDeleteModal(false);
@@ -151,16 +182,31 @@ export default function ManageFoods() {
           <Link href={`/${lang}/new-food`} className="bg-primary text-white px-4 py-2 rounded-theme text-sm hover:opacity-90 transition">
             + {t.addNew}
           </Link>
+          <button
+            onClick={confirmDeletion}
+            disabled={selectedIds.size === 0}
+            className="bg-red-500 text-white px-4 py-2 rounded-theme text-sm hover:bg-red-600 transition font-medium disabled:bg-text-main/20 disabled:text-text-main/50 disabled:cursor-not-allowed"
+          >
+            {t.deleteSelected || 'Delete Selected'}
+          </button>
         </div>
       </div>
-
       <div className="bg-card shadow rounded-theme overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[800px]">
           <thead className="bg-text-main/5 border-b border-text-main/10">
             <tr>
-              <th className="px-6 py-3 text-text-main/70 font-bold w-16"></th>
+              <th className="px-6 py-3 text-text-main/70 font-bold w-16">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size > 0 && selectedIds.size === sortedFoods.length}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                />
+              </th>
+              <th className="px-6 py-3 text-text-main/70 font-bold w-20">{dict?.components?.foodTable?.photo || 'Foto'}</th>
               <th 
-                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition" 
+                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition max-w-xs" 
                 onClick={() => handleSort('product_name')}
               >
                 <div className="flex items-center">
@@ -194,7 +240,10 @@ export default function ManageFoods() {
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   <td className="px-6 py-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded"></div>
+                    <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="w-16 h-16 bg-gray-200 rounded"></div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -212,7 +261,7 @@ export default function ManageFoods() {
               ))
             ) : sortedFoods.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-text-main/60">
+                <td colSpan={6} className="px-6 py-10 text-center text-text-main/60">
                 {t.noFoods}
                 </td>
               </tr>
@@ -220,21 +269,34 @@ export default function ManageFoods() {
               sortedFoods.map((food) => (
                 <tr key={food.id} className="hover:bg-text-main/5 transition-colors bg-card">
                   <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(food.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleSelectItem(food.id, e.target.checked);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
                     {food.front_photo_url ? (
                       <img 
                         src={food.front_photo_url} 
                         alt={food.product_name}
-                        className="w-12 h-12 object-cover rounded"
+                        className="w-16 h-16 object-cover rounded"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-text-main/10 rounded flex items-center justify-center text-text-main/40 text-xs">
+                      <div className="w-16 h-16 bg-text-main/10 rounded flex items-center justify-center text-text-main/40 text-xs">
                         {dict?.components?.foodCard?.noPhoto || 'No Image'}
                       </div>
                     )}
                   </td>
                   <td 
-                    className="px-6 py-4 font-medium text-text-main cursor-pointer" 
+                    className="px-6 py-4 font-medium text-text-main cursor-pointer max-w-xs truncate" 
                     onClick={() => handleFoodClick(food)}
+                    title={food.product_name}
                   >
                     {food.product_name}
                   </td>
@@ -251,26 +313,20 @@ export default function ManageFoods() {
                     {food.location || '—'}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-4">
-                      <Link 
-                        href={`/${lang}/edit/${food.id}`} 
-                        className="text-primary hover:opacity-80 hover:underline font-medium transition"
-                      >
+                    <Link 
+                      href={`/${lang}/edit/${food.id}`} 
+                      className="text-primary hover:opacity-80 hover:underline font-medium transition"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {t.edit}
-                      </Link>
-                      <button 
-                        onClick={() => confirmDeletion(food.id)} 
-                        className="text-red-500/70 hover:text-red-600 font-bold text-sm transition"
-                      >
-                        {t.delete}
-                      </button>
-                    </div>
+                    </Link>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </div>
       {selectedFood && (
         <FoodProfileModal
@@ -282,15 +338,14 @@ export default function ManageFoods() {
       )}
       <ConfirmModal 
         isOpen={showDeleteModal}
-        title={t.confirmDeleteTitle || "Delete Record"}
-        message={t.confirmDeleteMessage || "Are you sure you want to delete this food item? This action will permanently remove all data and images from the server."}
+        title={t.confirmDeleteTitle || "Delete Records"}
+        message={t.confirmDeleteMessage || `Are you sure you want to delete ${selectedIds.size} food item(s)? This action will permanently remove all data and images from the server.`}
         variant="danger"
         confirmLabel={t.delete}
         dict={dict}
         onConfirm={handleDelete}
         onCancel={() => {
           setShowDeleteModal(false);
-          setItemToDelete(null);
         }}
       />
     </div>

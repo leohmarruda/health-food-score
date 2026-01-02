@@ -24,7 +24,7 @@ export default function ManageAdditives() {
   const [loading, setLoading] = useState(true);
   const [dict, setDict] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({
@@ -199,32 +199,63 @@ export default function ManageAdditives() {
     });
   };
 
-  const confirmDeletion = (name: string) => {
-    setItemToDelete(name);
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedNames(new Set(sortedAdditives.map(a => a.name)));
+    } else {
+      setSelectedNames(new Set());
+    }
+  };
+
+  const handleSelectItem = (name: string, checked: boolean) => {
+    setSelectedNames(prev => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(name);
+      } else {
+        next.delete(name);
+      }
+      return next;
+    });
+  };
+
+  const confirmDeletion = () => {
+    if (selectedNames.size === 0) return;
     setShowDeleteModal(true);
   };
 
   const handleDelete = async () => {
-    if (!itemToDelete) return;
+    if (selectedNames.size === 0) return;
 
+    const namesToDelete = Array.from(selectedNames);
     const deletePromise = async () => {
-      const res = await fetch(`/api/additives/${encodeURIComponent(itemToDelete)}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || t.deleteError || 'Failed to delete additive');
+      // Delete all selected items
+      const deletePromises = namesToDelete.map(name => 
+        fetch(`/api/additives/${encodeURIComponent(name)}`, {
+          method: 'DELETE',
+        })
+      );
+      
+      const results = await Promise.allSettled(deletePromises);
+      const errors = results
+        .map((result, index) => ({ result, name: namesToDelete[index] }))
+        .filter(({ result }) => result.status === 'rejected')
+        .map(({ name }) => name);
+      
+      if (errors.length > 0) {
+        throw new Error(t.deleteError || `Failed to delete ${errors.length} additive(s)`);
       }
-      setAdditives(prev => prev.filter(a => a.name !== itemToDelete));
-      return res;
+      
+      setAdditives(prev => prev.filter(a => !selectedNames.has(a.name)));
+      setSelectedNames(new Set());
+      return results.length;
     };
 
     toast.promise(deletePromise(), {
-      loading: t.deleteLoading || 'Deleting additive...',
-      success: () => {
+      loading: t.deleteLoading || 'Deleting additives...',
+      success: (count) => {
         setShowDeleteModal(false);
-        setItemToDelete(null);
-        return t.deleteSuccess || 'Additive deleted successfully!';
+        return t.deleteSuccess || `${count} additive(s) deleted successfully!`;
       },
       error: (err) => {
         setShowDeleteModal(false);
@@ -248,12 +279,21 @@ export default function ManageAdditives() {
           </h1>
         </div>
         {!isAdding && !isEditing && (
-          <button
-            onClick={handleAdd}
-            className="bg-primary text-white px-4 py-2 rounded-theme text-sm hover:opacity-90 transition"
-          >
-            + {t.addNew || 'Add New'}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleAdd}
+              className="bg-primary text-white px-4 py-2 rounded-theme text-sm hover:opacity-90 transition"
+            >
+              + {t.addNew || 'Add New'}
+            </button>
+            <button
+              onClick={confirmDeletion}
+              disabled={selectedNames.size === 0}
+              className="bg-red-500 text-white px-4 py-2 rounded-theme text-sm hover:bg-red-600 transition font-medium disabled:bg-text-main/20 disabled:text-text-main/50 disabled:cursor-not-allowed"
+            >
+              {t.deleteSelected || 'Delete Selected'}
+            </button>
+          </div>
         )}
       </div>
 
@@ -261,7 +301,7 @@ export default function ManageAdditives() {
       {(isAdding || isEditing) && (
         <div className="bg-card shadow rounded-theme p-6 mb-6">
           <h2 className="text-xl font-semibold text-text-main mb-4">
-            {isAdding ? (t.addNewAdditive || 'Add New Additive') : (t.edit || 'Edit Additive')}
+            {isAdding ? (t.addNewAdditive || 'Add New Additive') : (t.edit || 'Edit')}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -336,11 +376,20 @@ export default function ManageAdditives() {
 
       {/* Table Section */}
       <div className="bg-card shadow rounded-theme overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[600px]">
           <thead className="bg-text-main/5 border-b border-text-main/10">
             <tr>
+              <th className="px-6 py-3 text-text-main/70 font-bold w-16">
+                <input
+                  type="checkbox"
+                  checked={selectedNames.size > 0 && selectedNames.size === sortedAdditives.length}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                />
+              </th>
               <th 
-                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition" 
+                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition max-w-xs" 
                 onClick={() => handleSort('name')}
               >
                 <div className="flex items-center">
@@ -367,7 +416,7 @@ export default function ManageAdditives() {
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition" 
+                className="px-6 py-3 text-text-main/70 font-bold cursor-pointer hover:bg-text-main/5 transition max-w-xs" 
                 onClick={() => handleSort('regex')}
               >
                 <div className="flex items-center">
@@ -401,55 +450,59 @@ export default function ManageAdditives() {
               ))
             ) : sortedAdditives.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-text-main/60">
+                <td colSpan={6} className="px-6 py-10 text-center text-text-main/60">
                   {t.noAdditives || 'No additives found. Click "Add New" to create one.'}
                 </td>
               </tr>
             ) : (
               sortedAdditives.map((additive) => (
                 <tr key={additive.name} className="hover:bg-text-main/5 transition-colors bg-card">
-                  <td className="px-6 py-4 font-medium text-text-main">{additive.name}</td>
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedNames.has(additive.name)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleSelectItem(additive.name, e.target.checked);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={isAdding || isEditing !== null}
+                      className="w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </td>
+                  <td className="px-6 py-4 font-medium text-text-main max-w-xs truncate" title={additive.name}>{additive.name}</td>
                   <td className="px-6 py-4 text-text-main/70">{additive.category}</td>
                   <td className="px-6 py-4 text-text-main/70">{additive.weight}</td>
-                  <td className="px-6 py-4 text-text-main/70 font-mono text-sm">
+                  <td className="px-6 py-4 text-text-main/70 font-mono text-sm max-w-xs truncate" title={additive.regex}>
                     {additive.regex}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-4">
-                      <button
-                        onClick={() => handleEdit(additive)}
-                        disabled={isAdding || isEditing !== null}
-                        className="text-primary hover:opacity-80 hover:underline font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {t.edit || 'Edit'}
-                      </button>
-                      <button
-                        onClick={() => confirmDeletion(additive.name)}
-                        disabled={isAdding || isEditing !== null}
-                        className="text-red-500/70 hover:text-red-600 font-bold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {t.delete || 'Delete'}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleEdit(additive)}
+                      disabled={isAdding || isEditing !== null}
+                      className="text-primary hover:opacity-80 hover:underline font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {t.edit || 'Edit'}
+                    </button>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <ConfirmModal
         isOpen={showDeleteModal}
-        title={t.confirmDeleteTitle || 'Delete Additive'}
-        message={(t.confirmDeleteMessage || `Are you sure you want to delete "{name}"? This action cannot be undone.`).replace('{name}', itemToDelete || '')}
+        title={t.confirmDeleteTitle || 'Delete Additives'}
+        message={t.confirmDeleteMessage || `Are you sure you want to delete ${selectedNames.size} additive(s)? This action cannot be undone.`}
         variant="danger"
         confirmLabel={t.delete || 'Delete'}
         dict={dict}
         onConfirm={handleDelete}
         onCancel={() => {
           setShowDeleteModal(false);
-          setItemToDelete(null);
         }}
       />
     </div>

@@ -249,6 +249,9 @@ export default function HFSInputModal({
     // Don't show as presumed zero if field is currently focused
     if (focusedFields.has(key)) return false;
     
+    // Don't show s7 (NOVA) as presumed zero
+    if (key === 's7') return false;
+    
     if (isV2) {
       if (key === 'ingredients_list') return false;
       const value = formData[key as keyof typeof formData];

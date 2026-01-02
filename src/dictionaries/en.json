@@ -42,7 +42,10 @@
       "deleteError": "Failed to delete",
       "deleteLoading": "Deleting food item and images...",
       "deleteSuccess": "Food item removed successfully!",
+      "deleteSelected": "Delete Selected",
       "edit": "Edit",
+      "itemSelected": "item selected",
+      "itemsSelected": "items selected",
       "loadError": "Failed to load foods",
       "manageAdditives": "Manage Additives",
       "name": "Food Name",
@@ -54,7 +57,7 @@
       "back": "Back",
       "addNew": "Add New",
       "addNewAdditive": "Add New Additive",
-      "edit": "Edit Additive",
+      "edit": "Edit",
       "name": "Name",
       "readOnly": "read-only",
       "category": "Category",
@@ -77,9 +80,12 @@
       "deleteLoading": "Deleting additive...",
       "deleteSuccess": "Additive deleted successfully!",
       "deleteError": "Failed to delete",
+      "deleteSelected": "Delete Selected",
       "confirmDeleteTitle": "Delete Additive",
       "confirmDeleteMessage": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
-      "fetchError": "Failed to fetch additives"
+      "fetchError": "Failed to fetch additives",
+      "itemSelected": "item selected",
+      "itemsSelected": "items selected"
     },
     "addFood": {
       "btnProcessing": "Processing...",
@@ -165,6 +171,7 @@
       "fat": "Fat",
       "kcal": "Kcal",
       "name": "Name",
+      "photo": "Photo",
       "protein": "Protein"
     },
     "foodProfileModal": {

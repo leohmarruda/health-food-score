@@ -42,7 +42,10 @@
       "deleteError": "Falha ao excluir",
       "deleteLoading": "Excluindo alimento e imagens...",
       "deleteSuccess": "Alimento removido com sucesso!",
+      "deleteSelected": "Excluir Selecionados",
       "edit": "Editar",
+      "itemSelected": "item selecionado",
+      "itemsSelected": "itens selecionados",
       "loadError": "Falha ao carregar alimentos",
       "manageAdditives": "Gerenciar Aditivos",
       "name": "Nome do Alimento",
@@ -54,7 +57,7 @@
       "back": "Voltar",
       "addNew": "Adicionar Novo",
       "addNewAdditive": "Adicionar Novo Aditivo",
-      "edit": "Editar Aditivo",
+      "edit": "Editar",
       "name": "Nome",
       "readOnly": "somente leitura",
       "category": "Categoria",
@@ -77,9 +80,12 @@
       "deleteLoading": "Excluindo aditivo...",
       "deleteSuccess": "Aditivo excluído com sucesso!",
       "deleteError": "Falha ao excluir",
+      "deleteSelected": "Excluir Selecionados",
       "confirmDeleteTitle": "Excluir Aditivo",
       "confirmDeleteMessage": "Tem certeza que deseja excluir \"{name}\"? Esta ação não pode ser desfeita.",
-      "fetchError": "Falha ao buscar aditivos"
+      "fetchError": "Falha ao buscar aditivos",
+      "itemSelected": "item selecionado",
+      "itemsSelected": "itens selecionados"
     },
     "addFood": {
       "btnProcessing": "Processando...",
@@ -165,6 +171,7 @@
       "fat": "Gorduras",
       "kcal": "Kcal",
       "name": "Nome",
+      "photo": "Foto",
       "protein": "Proteína"
     },
     "foodProfileModal": {
