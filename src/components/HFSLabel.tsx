@@ -1,6 +1,9 @@
 import type { Food } from '@/types/food';
 import { extractHFSScore } from '@/utils/form-helpers';
 
+/**
+ * Props for HFSLabel component
+ */
 interface HFSLabelProps {
   food: Food;
   variant?: 'card' | 'table';
@@ -9,7 +12,11 @@ interface HFSLabelProps {
 }
 
 /**
- * Get HFS score designation based on score value
+ * Gets HFS score designation based on score value.
+ * 
+ * @param score - HFS score (0-100)
+ * @param dict - Dictionary for localized labels
+ * @returns Designation string (ótimo, bom, moderado, ruim)
  */
 function getHFSDesignation(score: number, dict?: any): string {
   if (score < 0) return '';
@@ -20,9 +27,11 @@ function getHFSDesignation(score: number, dict?: any): string {
 }
 
 /**
- * Get color for HFS score (blue at 100, red at 0)
- * Returns RGB values for smooth gradient
- * Gradient: Blue (100) -> Cyan -> Green -> Yellow -> Orange -> Red (0)
+ * Gets RGB color for HFS score with smooth gradient.
+ * Gradient: Blue (100) -> Cyan -> Green -> Yellow -> Red (0)
+ * 
+ * @param score - HFS score (0-100)
+ * @returns RGB color values
  */
 function getHFSColor(score: number): { r: number; g: number; b: number } {
   if (score < 0) return { r: 128, g: 128, b: 128 }; // Gray for invalid scores
@@ -70,7 +79,10 @@ function getHFSColor(score: number): { r: number; g: number; b: number } {
 }
 
 /**
- * Get background color (lighter version with opacity) for badge
+ * Gets background color (lighter version with opacity) for badge.
+ * 
+ * @param score - HFS score (0-100)
+ * @returns RGBA color string
  */
 function getHFSBackgroundColor(score: number): string {
   const color = getHFSColor(score);
@@ -78,21 +90,13 @@ function getHFSBackgroundColor(score: number): string {
 }
 
 /**
- * Get text color (full color) for badge
+ * HFS Label component.
+ * Displays HFS score with color-coded background and designation.
+ * Shows the highest available HFS version (v2 > v1).
+ * 
+ * @param props - Component props
+ * @returns HFS score badge
  */
-function getHFSTextColor(score: number): string {
-  const color = getHFSColor(score);
-  return `rgb(${color.r}, ${color.g}, ${color.b})`;
-}
-
-/**
- * Get border color (medium opacity) for badge
- */
-function getHFSBorderColor(score: number): string {
-  const color = getHFSColor(score);
-  return `rgba(${color.r}, ${color.g}, ${color.b}, 0.4)`;
-}
-
 export default function HFSLabel({ food, variant = 'card', className = '', dict }: HFSLabelProps) {
   const { score: hfs, version } = extractHFSScore(food.hfs_score);
 

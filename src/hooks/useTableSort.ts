@@ -1,10 +1,21 @@
 import { useState, useMemo } from 'react';
 
+/**
+ * Sort configuration interface
+ */
 export interface SortConfig<T> {
   key: keyof T;
   order: 'asc' | 'desc';
 }
 
+/**
+ * Custom hook for table sorting functionality.
+ * 
+ * @param data - Array of items to sort
+ * @param defaultSortKey - Default sort key
+ * @param defaultOrder - Default sort order ('asc' or 'desc')
+ * @returns Sort configuration, handler, and sorted data
+ */
 export function useTableSort<T>(
   data: T[],
   defaultSortKey: keyof T = 'name' as keyof T,

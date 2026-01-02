@@ -1,5 +1,11 @@
 import { useState, useCallback } from 'react';
 
+/**
+ * Custom hook for managing locked/unlocked form fields.
+ * Allows users to lock fields to prevent accidental edits.
+ * 
+ * @returns Locked fields set, toggle function, and check function
+ */
 export function useLockedFields() {
   const [lockedFields, setLockedFields] = useState<Set<string>>(new Set());
 

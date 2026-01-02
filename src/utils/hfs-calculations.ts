@@ -1,67 +1,87 @@
 /**
- * Calculate HFS score components from raw parameters
+ * HFS (Health Food Score) calculation utilities
+ * 
+ * This module contains functions to calculate HFS v1 and v2 scores
+ * from nutritional parameters and ingredient lists.
  */
 
+/**
+ * HFS v1 input parameters (per 100g)
+ */
 interface HFSParameters {
-  s1a?: number; // Açúcares adicionados (g)
-  s1b?: number; // Açúcares naturais (g)
-  s2?: number; // Fibras (g)
-  s3a?: number; // Gordura Saturada (g)
-  s3b?: number; // Gordura Trans (g)
-  s4?: number; // Densidade calórica (kcal)
-  s5?: number; // Proteína (g)
-  s6?: number; // Sódio (mg)
-  s7?: number; // Grau de processamento (NOVA)
-  s8?: number; // Aditivos artificiais (lista)
-}
-
-interface HFSCalculatedScores {
-  S1?: number;
-  S2?: number;
-  s3?: number;
-  S3?: number;
-  S4?: number;
-  S5?: number;
-  S6?: number;
-  S7?: number;
-  S8?: number;
-  N?: number;
-  M?: number;
-  P?: number;
-  R?: number;
-  HFSv1?: number;
-}
-
-interface HFSV2Parameters {
-  fiber_g?: number; // Fibra (g)
-  protein_g?: number; // Proteína (g)
-  carbs_total_g?: number; // Carboidratos totais (g)
-  energy_kcal?: number; // Energia (kcal)
-  fat_total_g?: number; // Gordura total (g)
-  abv_percentage?: number; // ABV (%)
-  sugars_added_g?: number; // Açúcares adicionados (g)
-  trans_fat_g?: number; // Gordura trans (g)
-  sodium_mg?: number; // Sódio (mg)
-  ingredients_list?: string[]; // Lista de ingredientes para buscar aditivos
-}
-
-interface HFSV2CalculatedScores {
-  fibra?: number;
-  proteina_bruta?: number;
-  proteina?: number;
-  baixo_carbo_liquido?: number;
-  baixa_densidade?: number;
-  F_hidratacao?: number;
-  S_carbo_liquido?: number;
-  S_razao_carb_fibra?: number;
-  S_gordura_trans?: number;
-  S_sodio?: number;
-  S_densidade_energetica?: number;
-  aditivos?: number;
+  s1a?: number; // Added sugars (g)
+  s1b?: number; // Natural sugars (g)
+  s2?: number; // Fiber (g)
+  s3a?: number; // Saturated fat (g)
+  s3b?: number; // Trans fat (g)
+  s4?: number; // Energy density (kcal)
+  s5?: number; // Protein (g)
+  s6?: number; // Sodium (mg)
+  s7?: number; // Processing degree (NOVA: 1-4)
+  s8?: number; // Artificial additives (count)
 }
 
 /**
- * Saturation function (Michaelis–Menten): S(x, k) = x / (x + k)
+ * HFS v1 calculated scores
+ */
+interface HFSCalculatedScores {
+  S1?: number; // Sugar score
+  S2?: number; // Fiber score
+  s3?: number; // Combined fat (saturated + 10*trans)
+  S3?: number; // Fat score
+  S4?: number; // Energy density score
+  S5?: number; // Protein score
+  S6?: number; // Sodium score
+  S7?: number; // Processing degree score (NOVA)
+  S8?: number; // Additives score
+  N?: number; // Nutritional score
+  M?: number; // Moderation score
+  P?: number; // Processing score
+  R?: number; // Risk score
+  HFSv1?: number; // Final HFS v1 score
+}
+
+/**
+ * HFS v2 input parameters (per 100g)
+ */
+interface HFSV2Parameters {
+  fiber_g?: number; // Fiber (g)
+  protein_g?: number; // Protein (g)
+  carbs_total_g?: number; // Total carbohydrates (g)
+  energy_kcal?: number; // Energy (kcal)
+  fat_total_g?: number; // Total fat (g)
+  abv_percentage?: number; // Alcohol by volume (%)
+  sugars_added_g?: number; // Added sugars (g)
+  trans_fat_g?: number; // Trans fat (g)
+  sodium_mg?: number; // Sodium (mg)
+  ingredients_list?: string[]; // Ingredients list for additive detection
+}
+
+/**
+ * HFS v2 calculated scores
+ */
+interface HFSV2CalculatedScores {
+  fibra?: number; // Fiber score
+  proteina_bruta?: number; // Raw protein score
+  proteina?: number; // Protein score
+  baixo_carbo_liquido?: number; // Low net carbs score
+  baixa_densidade?: number; // Low energy density score
+  F_hidratacao?: number; // Hydration factor
+  S_carbo_liquido?: number; // Net carbs score
+  S_razao_carb_fibra?: number; // Carb/fiber ratio score
+  S_gordura_trans?: number; // Trans fat score
+  S_sodio?: number; // Sodium score
+  S_densidade_energetica?: number; // Energy density score
+  aditivos?: number; // Additives score
+}
+
+/**
+ * Saturation function (Michaelis–Menten kinetics).
+ * Used in HFS v2 calculations: S(x, k) = x / (x + k)
+ * 
+ * @param x - Input value
+ * @param k - Saturation constant (half-maximum value)
+ * @returns Saturation value between 0 and 1
  */
 function S(x: number, k: number): number {
   if (k === 0) {
@@ -76,9 +96,11 @@ function S(x: number, k: number): number {
 }
 
 /**
- * Calculate harmful additives contribution sum
- * Searches for additives in ingredients list using regex from additive_rules table
- * Returns sum of contributions: sum(weight * 0.80) for each detected additive
+ * Calculates harmful additives contribution sum.
+ * Searches for additives in ingredients list using regex patterns from additive_rules table.
+ * 
+ * @param ingredientsList - Array of ingredient strings to check
+ * @returns Sum of contributions: Σ(weight * 0.80) for each detected additive
  */
 async function calculateHarmfulAdditives(ingredientsList: string[]): Promise<number> {
   if (!Array.isArray(ingredientsList) || ingredientsList.length === 0) {
@@ -146,8 +168,16 @@ async function calculateHarmfulAdditives(ingredientsList: string[]): Promise<num
   }
 }
 
+/**
+ * Calculates HFS v1 scores from nutritional parameters.
+ * All values are normalized to numbers (0 if undefined/null).
+ * Results are rounded to 3 decimal places.
+ * 
+ * @param params - HFS v1 input parameters (per 100g)
+ * @returns Calculated HFS v1 scores
+ */
 export function calculateHFSScores(params: HFSParameters): HFSCalculatedScores {
-  // Ensure all values are numbers, defaulting to 0 if undefined or null
+  // Normalize all values to numbers, defaulting to 0 if undefined or null
   const s1a = typeof params.s1a === 'number' && !isNaN(params.s1a) ? params.s1a : 0;
   const s1b = typeof params.s1b === 'number' && !isNaN(params.s1b) ? params.s1b : 0;
   const s2 = typeof params.s2 === 'number' && !isNaN(params.s2) ? params.s2 : 0;
@@ -249,7 +279,11 @@ export function calculateHFSScores(params: HFSParameters): HFSCalculatedScores {
 }
 
 /**
- * Calculate HFS v2 scores from raw parameters
+ * Calculates HFS v2 scores from nutritional parameters.
+ * Results are rounded to 3 decimal places.
+ * 
+ * @param params - HFS v2 input parameters (per 100g)
+ * @returns Calculated HFS v2 scores
  */
 export async function calculateHFSV2Scores(params: HFSV2Parameters): Promise<HFSV2CalculatedScores> {
   const {

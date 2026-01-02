@@ -2,6 +2,9 @@ import { useState, useCallback } from 'react';
 import { prepareInitialScores } from '@/utils/hfs';
 import type { FoodFormData } from '@/types/food';
 
+/**
+ * Result of HFS preparation for input modal
+ */
 interface HFSPreparationResult {
   scores?: any;
   servingSize?: number;
@@ -10,7 +13,10 @@ interface HFSPreparationResult {
 }
 
 /**
- * Hook to prepare HFS data for input modal
+ * Custom hook for preparing HFS data for input modal.
+ * Handles conversion from serving size to 100g standard.
+ * 
+ * @returns Preparation data and prepare functions for v1/v2
  */
 export function useHFSPreparation() {
   const [preparationData, setPreparationData] = useState<HFSPreparationResult>({});

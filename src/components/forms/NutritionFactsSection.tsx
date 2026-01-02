@@ -4,6 +4,9 @@ import NumericField from './NumericField';
 import type { FoodFormData } from '@/types/food';
 import { formatHFSScore } from '@/utils/form-helpers';
 
+/**
+ * Props for NutritionFactsSection component
+ */
 interface NutritionFactsSectionProps {
   formData: FoodFormData;
   dict: any;
@@ -12,8 +15,12 @@ interface NutritionFactsSectionProps {
   isLocked?: (field: string) => boolean;
   onToggleLock?: (field: string) => void;
   onFieldError?: (fieldName: string, hasError: boolean) => void;
+  isLiquid?: boolean | undefined;
 }
 
+/**
+ * Nutrition field definitions
+ */
 const NUTRITION_FIELDS = [
   { labelKey: 'serving', field: 'serving_size_value', type: 'number' as const, unit: '', step: '1' },
   { labelKey: 'unit', field: 'serving_size_unit', type: 'text' as const, unit: '' },
@@ -26,6 +33,13 @@ const NUTRITION_FIELDS = [
   { labelKey: 'saturatedFat', field: 'saturated_fat_g', type: 'number' as const, unit: '(g)', step: '0.1' }
 ];
 
+/**
+ * Nutrition facts section component for food form.
+ * Displays nutritional values, serving size, density, NOVA, and ABV fields.
+ * 
+ * @param props - Component props
+ * @returns Nutrition facts form section
+ */
 export default function NutritionFactsSection({
   formData,
   dict,
@@ -33,7 +47,8 @@ export default function NutritionFactsSection({
   onChange,
   isLocked,
   onToggleLock,
-  onFieldError
+  onFieldError,
+  isLiquid = false
 }: NutritionFactsSectionProps) {
   return (
     <section>
@@ -132,19 +147,44 @@ export default function NutritionFactsSection({
             />
           );
         })}
-        {/* ABV - Alcohol by Volume */}
-        <NumericField
-          label={dict?.pages?.edit?.labelABV || 'ABV (%) - Alcohol by Volume'}
-          name="abv_percentage"
-          value={formData.abv_percentage ?? ''}
-          onChange={(value) => onChange('abv_percentage', value)}
-          step="0.1"
-          max={100}
-          locked={isLocked?.('abv_percentage')}
-          onToggleLock={onToggleLock ? () => onToggleLock('abv_percentage') : undefined}
-          onFieldError={onFieldError}
-          dict={dict}
-        />
+        {(isLiquid === true || (isLiquid === undefined && (formData.category === 'drink' || formData.category === 'alcohol' || formData.nutrition_parsed?.density_g_per_ml != null))) && (
+          <>
+            {/* ABV - Alcohol by Volume */}
+            <NumericField
+              label={dict?.pages?.edit?.labelABV || 'ABV (%) - Alcohol by Volume'}
+              name="abv_percentage"
+              value={formData.abv_percentage ?? ''}
+              onChange={(value) => onChange('abv_percentage', value)}
+              step="0.1"
+              max={100}
+              locked={isLocked?.('abv_percentage')}
+              onToggleLock={onToggleLock ? () => onToggleLock('abv_percentage') : undefined}
+              onFieldError={onFieldError}
+              dict={dict}
+            />
+            {/* Density */}
+            <NumericField
+              label={`${dict?.pages?.edit?.labelDensity || dict?.hfsScores?.density || 'Densidade'} (g/ml)`}
+              name="density"
+              value={formData.density ?? ''}
+              onChange={(value) => onChange('density', value)}
+              onBlur={() => {
+                // Apply default value only on blur if field is empty
+                const densityValue = formData.density;
+                if (densityValue === null || densityValue === undefined) {
+                  onChange('density', '1.0');
+                }
+              }}
+              step="0.01"
+              defaultValue={1.0}
+              showDefaultAsItalic={true}
+              locked={isLocked?.('density')}
+              onToggleLock={onToggleLock ? () => onToggleLock('density') : undefined}
+              onFieldError={onFieldError}
+              dict={dict}
+            />
+          </>
+        )}
         {/* NOVA Classification */}
         <NumericField
           label={dict?.pages?.edit?.labelNOVA || 'NOVA (v1)'}
@@ -158,20 +198,6 @@ export default function NutritionFactsSection({
           onFieldError={onFieldError}
           dict={dict}
           infoTooltip={'1 – in natura ou minimamente processado (frutas, legumes, grãos integrais, leite, carne in natura)\n2 – ingredientes culinários processados (óleo, açúcar, sal, manteiga, etc., usados em combinação simples)\n3 – processados (pão simples, queijos, conservas salgadas etc., poucos ingredientes)\n4 – ultraprocessados (vários aditivos, "aromatizante", "realçador de sabor", "gordura vegetal hidrogenada", etc.)'}
-        />
-        {/* Density */}
-        <NumericField
-          label={`${dict?.pages?.edit?.labelDensity || dict?.hfsScores?.density || 'Densidade'} (g/ml)`}
-          name="density"
-          value={formData.density ?? ''}
-          onChange={(value) => onChange('density', value || '1.0')}
-          step="0.01"
-          defaultValue={1.0}
-          showDefaultAsItalic={true}
-          locked={isLocked?.('density')}
-          onToggleLock={onToggleLock ? () => onToggleLock('density') : undefined}
-          onFieldError={onFieldError}
-          dict={dict}
         />
       </div>
     </section>

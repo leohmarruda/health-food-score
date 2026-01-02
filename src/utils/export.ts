@@ -1,3 +1,12 @@
+/**
+ * Downloads food data as CSV file.
+ * Includes UTF-8 BOM for proper Excel encoding (especially Brazilian Excel).
+ * Uses semicolon as delimiter (Brazilian Excel standard).
+ * 
+ * @param data - Array of food items to export
+ * @param fileName - Name of the CSV file (without extension)
+ * @param dict - Dictionary for localized headers
+ */
 export const downloadAsCSV = (data: any[], fileName: string, dict?: any) => {
     if (data.length === 0) return;
   

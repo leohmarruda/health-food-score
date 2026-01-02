@@ -1,5 +1,8 @@
 import { getDefaultValueConfig, DefaultValueIcon, getPlaceholderClasses } from '@/utils/field-helpers';
 
+/**
+ * Props for FormTextarea component
+ */
 interface FormTextareaProps {
   label: string;
   value: string;
@@ -15,6 +18,12 @@ interface FormTextareaProps {
   dict?: any;
 }
 
+/**
+ * Textarea form field component with lock/unlock functionality and error display.
+ * 
+ * @param props - Component props
+ * @returns Textarea form field
+ */
 export default function FormTextarea({
   label,
   value,

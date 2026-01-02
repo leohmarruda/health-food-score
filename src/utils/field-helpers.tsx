@@ -69,8 +69,9 @@ export function getDefaultValueConfig(config: DefaultValueConfig): DefaultValueR
       finalPlaceholder = String(defaultValue);
     } else if (isNonePlaceholder) {
       finalPlaceholder = placeholder;
-    } else if (isEmpty) {
-      finalPlaceholder = '0';
+    } else if (isEmpty && defaultValue !== undefined) {
+      // Only show "0" placeholder if there's a defaultValue defined
+      finalPlaceholder = String(defaultValue);
     }
   } else if (placeholder) {
     finalPlaceholder = placeholder;

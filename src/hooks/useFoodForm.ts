@@ -3,7 +3,9 @@ import { useState, useCallback } from 'react';
 import { cleanFoodData, extractImageUrls, isFormDirty } from '@/utils/form-helpers';
 import type { FoodFormData } from '@/types/food';
 
-// Constants
+/**
+ * Initial form state
+ */
 const initialState: FoodFormData = {
   product_name: '',
   brand: '',
@@ -33,6 +35,11 @@ const initialState: FoodFormData = {
   last_update: ''
 };
 
+/**
+ * Custom hook for managing food form state and operations.
+ * 
+ * @returns Form state, images, dirty status, and update functions
+ */
 export function useFoodForm() {
   // State
   const [formData, setFormData] = useState<FoodFormData>(initialState);

@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import type { FoodFormData } from '@/types/food';
 import { getDefaultValueConfig, DefaultValueIcon, getPlaceholderClasses } from '@/utils/field-helpers';
 
+/**
+ * Props for NumericField component
+ */
 interface NumericFieldProps {
   label: string;
   name: keyof FoodFormData;
@@ -23,7 +26,15 @@ interface NumericFieldProps {
   infoTooltip?: string;
 }
 
-// Helper function to validate numeric fields
+/**
+ * Validates numeric field value
+ * 
+ * @param value - Value to validate
+ * @param allowEmpty - Whether empty values are allowed
+ * @param integerOnly - Whether only integers are allowed
+ * @param max - Maximum allowed value
+ * @returns True if value is valid
+ */
 const isValidNumber = (value: string | number | undefined, allowEmpty: boolean = true, integerOnly: boolean = false, max?: number): boolean => {
   if (value === undefined || value === null || value === '') {
     return allowEmpty;
@@ -41,13 +52,25 @@ const isValidNumber = (value: string | number | undefined, allowEmpty: boolean =
   return true;
 };
 
-// Convert comma to dot and normalize value
+/**
+ * Normalizes numeric value by converting comma to dot
+ * 
+ * @param value - Value to normalize
+ * @returns Normalized string value
+ */
 const normalizeValue = (value: string | number | undefined): string => {
   if (value === undefined || value === null) return '';
   const strValue = String(value);
   return strValue.replace(',', '.');
 };
 
+/**
+ * Numeric input field component with validation, default values, and error handling.
+ * Supports comma/dot decimal separators, integer-only mode, max values, and default value display.
+ * 
+ * @param props - Component props
+ * @returns Numeric input field with validation
+ */
 export default function NumericField({
   label,
   name,

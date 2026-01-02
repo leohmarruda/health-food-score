@@ -3,6 +3,9 @@ import FormField from './FormField';
 import NumericField from './NumericField';
 import type { FoodFormData } from '@/types/food';
 
+/**
+ * Props for BasicInfoSection component
+ */
 interface BasicInfoSectionProps {
   formData: FoodFormData;
   dict: any;
@@ -10,16 +13,58 @@ interface BasicInfoSectionProps {
   isLocked?: (field: string) => boolean;
   onToggleLock?: (field: string) => void;
   onFieldError?: (fieldName: string, hasError: boolean) => void;
+  isLiquid?: boolean | undefined;
+  onLiquidChange?: (isLiquid: boolean | undefined) => void;
 }
 
+/**
+ * Basic information section component for food form.
+ * Includes product name, brand, category, location, price, and liquid checkbox.
+ * 
+ * @param props - Component props
+ * @returns Basic info form section
+ */
 export default function BasicInfoSection({
   formData,
   dict,
   onChange,
   isLocked,
   onToggleLock,
-  onFieldError
+  onFieldError,
+  isLiquid,
+  onLiquidChange
 }: BasicInfoSectionProps) {
+  // Determine if checkbox should be checked
+  // If isLiquid is explicitly set (true or false), use that value
+  // Otherwise, check based on density_g_per_ml or category
+  const shouldBeChecked = isLiquid !== undefined
+    ? isLiquid
+    : (formData.nutrition_parsed?.density_g_per_ml != null) ||
+      formData.category === 'drink' ||
+      formData.category === 'alcohol';
+
+  const handleCategoryChange = (value: string) => {
+    onChange('category', value);
+    // Auto-check liquid if category is drink or alcohol (only if isLiquid hasn't been explicitly set to false)
+    if ((value === 'drink' || value === 'alcohol') && isLiquid !== false) {
+      onLiquidChange?.(true);
+    } else if (isLiquid && value !== 'drink' && value !== 'alcohol') {
+      // If changing category away from drink/alcohol and no density, uncheck
+      const hasDensity = formData.nutrition_parsed?.density_g_per_ml != null;
+      if (!hasDensity) {
+        onLiquidChange?.(false);
+      }
+    }
+  };
+
+  const handleLiquidChange = (checked: boolean) => {
+    onLiquidChange?.(checked);
+    // If unchecking, set density and ABV to null
+    if (!checked) {
+      onChange('density', null as any);
+      onChange('abv_percentage', null as any);
+    }
+  };
   return (
     <section>
       <h3 className="text-lg font-bold mb-4 text-primary">1. {dict?.pages?.edit?.sectionBasic || 'Basic Metadata'}</h3>
@@ -58,11 +103,9 @@ export default function BasicInfoSection({
         <NumericField
           label={dict?.pages?.edit?.labelPrice || 'Price'}
           name="price"
-          value={formData.price || ''}
-          onChange={(value) => onChange('price', value || '0.00')}
+          value={formData.price !== undefined && formData.price !== null ? formData.price : ''}
+          onChange={(value) => onChange('price', value)}
           step="0.01"
-          defaultValue={0.00}
-          showDefaultAsItalic={true}
           locked={isLocked?.('price')}
           onToggleLock={onToggleLock ? () => onToggleLock('price') : undefined}
           onFieldError={onFieldError}
@@ -72,16 +115,29 @@ export default function BasicInfoSection({
           <label className="block text-xs font-bold text-text-main/70 mb-1">
             {dict?.pages?.edit?.labelCategory || 'Category'}
           </label>
-          <select
-            value={formData.category || ''}
-            onChange={(e) => onChange('category', e.target.value)}
-            className="w-full bg-background border border-text-main/20 text-text-main p-2 rounded-theme focus:outline-none focus:border-primary h-[42px]"
-          >
-            <option value="">{dict?.pages?.edit?.labelCategorySelect || 'Select category...'}</option>
-            {dict?.categories && Object.entries(dict.categories).map(([key, value]) => (
-              <option key={key} value={key}>{value as string}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <select
+              value={formData.category || ''}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="flex-1 bg-background border border-text-main/20 text-text-main p-2 rounded-theme focus:outline-none focus:border-primary h-[42px]"
+            >
+              <option value="">{dict?.pages?.edit?.labelCategorySelect || 'Select category...'}</option>
+              {dict?.categories && Object.entries(dict.categories).map(([key, value]) => (
+                <option key={key} value={key}>{value as string}</option>
+              ))}
+            </select>
+            <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={shouldBeChecked}
+                onChange={(e) => handleLiquidChange(e.target.checked)}
+                className="w-4 h-4 cursor-pointer"
+              />
+              <span className="text-xs font-medium text-text-main/70">
+                {dict?.pages?.edit?.labelLiquid || 'Líquido'}
+              </span>
+            </label>
+          </div>
         </div>
       </div>
     </section>

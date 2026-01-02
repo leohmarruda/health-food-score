@@ -14,8 +14,8 @@ export function cleanFoodData(data: any): FoodFormData {
       // Default density to 1.0 if null or undefined
       acc[key] = data[key] ?? 1.0;
     } else if (key === 'price') {
-      // Default price to 0.00 if null or undefined
-      acc[key] = data[key] ?? 0.00;
+      // Keep price as-is (no default value)
+      acc[key] = data[key] ?? undefined;
     } else if (optionalNumericFields.includes(key)) {
       // Keep null/undefined for other optional numeric fields
       acc[key] = data[key] ?? undefined;

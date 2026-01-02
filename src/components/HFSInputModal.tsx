@@ -38,6 +38,8 @@ interface HFSInputModalProps {
   servingSize?: number;
   servingUnit?: string;
   density?: number;
+  isLiquid?: boolean;
+  onLiquidChange?: (isLiquid: boolean) => void;
   onConfirm: (data: any) => void;
   onCancel: () => void;
   dict?: any;
@@ -51,6 +53,8 @@ export default function HFSInputModal({
   servingSize,
   servingUnit,
   density,
+  isLiquid: externalIsLiquid,
+  onLiquidChange,
   onConfirm,
   onCancel,
   dict
@@ -61,6 +65,28 @@ export default function HFSInputModal({
 
   const t = dict?.hfsScores || {};
   const isV2 = version === 'v2';
+
+  // Use external isLiquid if provided, otherwise derive from form data
+  const isLiquid = externalIsLiquid !== undefined 
+    ? externalIsLiquid
+    : (isV2
+        ? ((initialFormData as any)?.nutrition_parsed?.density_g_per_ml != null) ||
+          (initialFormData?.abv_percentage != null && initialFormData.abv_percentage > 0) ||
+          (initialFormData?.density != null)
+        : (initialScores?.density != null && initialScores.density !== 1.0) ||
+          (density != null && density !== 1.0));
+
+  const handleLiquidChange = (checked: boolean) => {
+    onLiquidChange?.(checked);
+    // Set density and ABV to undefined when unchecking
+    if (!checked) {
+      if (isV2) {
+        setFormData(prev => ({ ...prev, abv_percentage: undefined, density: undefined }));
+      } else {
+        setScores(prev => ({ ...prev, density: undefined }));
+      }
+    }
+  };
 
   const conversionParams = {
     servingSize: servingSize || formData.serving_size_value,
@@ -94,7 +120,7 @@ export default function HFSInputModal({
 
   if (!isOpen) return null;
 
-  // V1 fields (original)
+  // V1 fields (original) - density removed, will be shown conditionally
   const v1Fields = [
     { key: 's1a', description: t.s1aDescription || 'Açúcares adicionados', unit: 'g', type: 'number' },
     { key: 's1b', description: t.s1bDescription || 'Açúcares naturais', unit: 'g', type: 'number' },
@@ -106,12 +132,17 @@ export default function HFSInputModal({
     { key: 's6', description: t.s6Description || 'Sódio', unit: 'mg', type: 'number' },
     { key: 's7', description: t.s7Description || 'Grau de processamento (NOVA)', unit: '', type: 'number' },
     { key: 's8', description: t.s8Description || 'Aditivos artificiais', unit: '', type: 'number' },
+  ].map(field => ({
+    ...field,
+    label: `${field.key}: ${field.description}${field.unit ? ` (${field.unit})` : ''}`
+  }));
+
+  // V1 liquid fields (shown when isLiquid is true)
+  const v1LiquidFields = [
     { key: 'density', description: t.densityDescription || 'Densidade', unit: 'g/ml', type: 'number' },
   ].map(field => ({
     ...field,
-    label: field.key === 'density' 
-      ? `${field.description}${field.unit ? ` (${field.unit})` : ''}`
-      : `${field.key}: ${field.description}${field.unit ? ` (${field.unit})` : ''}`
+    label: `${field.description}${field.unit ? ` (${field.unit})` : ''}`
   }));
 
   // V2 fields - ingredients_list is separate, then special fields, then subtitle, then nutrients
@@ -132,7 +163,7 @@ export default function HFSInputModal({
     label: `${field.description}${field.unit ? ` (${field.unit})` : ''}`
   }));
 
-  // Nutrient fields (after subtitle)
+  // Nutrient fields (after subtitle) - abv_percentage removed, will be shown conditionally
   const v2NutrientFields = [
     { key: 'energy_kcal', description: t.v2Energy || 'Energia', unit: 'kcal', type: 'number' as const },
     { key: 'carbs_total_g', description: t.v2CarbsTotal || 'Carboidratos totais', unit: 'g', type: 'number' as const },
@@ -141,7 +172,15 @@ export default function HFSInputModal({
     { key: 'fiber_g', description: t.v2Fiber || 'Fibra alimentar', unit: 'g', type: 'number' as const },
     { key: 'saturated_fat_g', description: t.v2SaturatedFat || 'Gordura saturada', unit: 'g', type: 'number' as const },
     { key: 'trans_fat_g', description: t.v2TransFat || 'Gordura trans', unit: 'g', type: 'number' as const },
+  ].map(field => ({
+    ...field,
+    label: `${field.description}${field.unit ? ` (${field.unit})` : ''}`
+  }));
+
+  // V2 liquid fields (shown when isLiquid is true)
+  const v2LiquidFields = [
     { key: 'abv_percentage', description: t.v2ABV || 'ABV', unit: '%', type: 'number' as const },
+    { key: 'density', description: t.densityDescription || 'Densidade', unit: 'g/ml', type: 'number' as const },
   ].map(field => ({
     ...field,
     label: `${field.description}${field.unit ? ` (${field.unit})` : ''}`
@@ -201,7 +240,14 @@ export default function HFSInputModal({
       });
       const converted = convertNutrientsFrom100g(numericData, nutrientFields, conversionParams); 
       const result = { ...formData, ...converted };
-      result.abv_percentage = formData.abv_percentage ?? 0;
+      // Include ABV and density if isLiquid is true, otherwise set to null
+      if (isLiquid) {
+        result.abv_percentage = formData.abv_percentage ?? 0;
+        result.density = formData.density ?? 1.0;
+      } else {
+        result.abv_percentage = undefined;
+        result.density = undefined;
+      }
       onConfirm(result);
     } else {
       const scoreFields = ['s1a', 's1b', 's2', 's3a', 's3b', 's4', 's5', 's6', 's7', 's8'];
@@ -221,8 +267,13 @@ export default function HFSInputModal({
           result[field] = value !== undefined && value !== null ? value : 0;
         }
       });
-      const densityValue = scores.density ?? density ?? 1.0;
-      result.density = densityValue || 1.0;
+      // Include density if isLiquid is true, otherwise set to null
+      if (isLiquid) {
+        const densityValue = scores.density ?? density ?? 1.0;
+        result.density = densityValue || 1.0;
+      } else {
+        result.density = null;
+      }
       onConfirm(result);
     }
   };
@@ -282,6 +333,21 @@ export default function HFSInputModal({
             </button>
           </div>
 
+          {/* Liquid checkbox - shown first for both v1 and v2 */}
+          <div className="mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isLiquid}
+                onChange={(e) => handleLiquidChange(e.target.checked)}
+                className="w-4 h-4 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-text-main/80">
+                {dict?.pages?.edit?.labelLiquid || 'Líquido'}
+              </span>
+            </label>
+          </div>
+
           {isV2 ? (
             <>
               {/* Ingredients list field */}
@@ -315,8 +381,12 @@ export default function HFSInputModal({
                   // Get default value configuration
                   // Convert array to string for getDefaultValueConfig (it expects string | number | undefined)
                   const configValue = Array.isArray(rawValue) ? rawValue.join(', ') : rawValue;
+                  // For numeric fields without a specific default, use 0 as default
+                  const numericDefaultValue = !isTextArea && presumedZero ? 0 : undefined;
                   const defaultConfig = getDefaultValueConfig({
                     value: configValue,
+                    defaultValue: numericDefaultValue,
+                    showDefaultAsItalic: presumedZero,
                     placeholder: isDeclaredField && isEmpty ? noneText : (presumedZero ? '0' : undefined),
                     isFocused,
                     dict
@@ -382,17 +452,24 @@ export default function HFSInputModal({
               {/* Nutrient fields */}
               <div className="grid grid-cols-2 gap-3">
                 {fields.map(({ key, label, type }) => {
-                  const value = getFieldValue(key);
-                  const presumedZero = isPresumedZero(key);
+                  // Skip abv_percentage and density from main fields - they'll be shown separately
+                  if (key === 'abv_percentage' || key === 'density') return null;
+                  
+                  const rawValue = getFieldValue(key);
                   const isFocused = focusedFields.has(key);
-                  const displayValue = presumedZero && !isFocused ? '' : String(value || '');
+                  // Check if field is empty (undefined, null, or empty string)
+                  const isEmpty = rawValue === undefined || rawValue === null || rawValue === '' || rawValue === 0 || rawValue === '0';
+                  const displayValue = isEmpty && !isFocused ? '' : String(rawValue || '');
                   
                   // Get default value configuration
                   // Convert array to string for getDefaultValueConfig (it expects string | number | undefined)
-                  const configValue = Array.isArray(value) ? value.join(', ') : value;
+                  const configValue = Array.isArray(rawValue) ? rawValue.join(', ') : rawValue;
+                  // All numeric fields in v2 should have defaultValue: 0 when empty
                   const defaultConfig = getDefaultValueConfig({
                     value: configValue,
-                    placeholder: presumedZero ? '0' : undefined,
+                    defaultValue: isEmpty ? 0 : undefined,
+                    showDefaultAsItalic: isEmpty,
+                    placeholder: isEmpty ? '0' : undefined,
                     isFocused,
                     dict
                   });
@@ -405,7 +482,49 @@ export default function HFSInputModal({
                       </label>
                       <input
                         type={type}
-                        step={key === 'abv_percentage' ? '1' : '0.1'}
+                        step="0.1"
+                        value={displayValue}
+                        onChange={(e) => handleChange(key, e.target.value)}
+                        onFocus={() => setFocusedFields(prev => new Set(prev).add(key))}
+                        onBlur={() => {
+                          setFocusedFields(prev => {
+                            const next = new Set(prev);
+                            next.delete(key);
+                            return next;
+                          });
+                        }}
+                        placeholder={defaultConfig.placeholder || '—'}
+                        className={`w-full px-3 py-2 bg-background border border-text-main/20 rounded-theme text-sm text-text-main focus:outline-none focus:border-primary ${getPlaceholderClasses(defaultConfig.showItalic)}`}
+                      />
+                    </div>
+                  );
+                })}
+                {/* Liquid fields - shown at the end when isLiquid is true */}
+                {isLiquid && v2LiquidFields.map(({ key, label, type }) => {
+                  const value = getFieldValue(key);
+                  const presumedZero = isPresumedZero(key);
+                  const isFocused = focusedFields.has(key);
+                  const displayValue = presumedZero && !isFocused ? '' : String(value || '');
+                  
+                  const configValue = Array.isArray(value) ? value.join(', ') : value;
+                  const defaultConfig = getDefaultValueConfig({
+                    value: configValue,
+                    defaultValue: key === 'density' ? 1.0 : (presumedZero ? 0 : undefined),
+                    showDefaultAsItalic: presumedZero || key === 'density',
+                    placeholder: presumedZero ? '0' : (key === 'density' ? '1.0' : undefined),
+                    isFocused,
+                    dict
+                  });
+                  
+                  return (
+                    <div key={key} className="flex flex-col">
+                      <label className="text-xs font-medium text-text-main/80 mb-1 flex items-center gap-1.5">
+                        <span>{label}</span>
+                        {defaultConfig.showIcon && <DefaultValueIcon tooltipText={defaultConfig.tooltipText} />}
+                      </label>
+                      <input
+                        type={type}
+                        step={key === 'abv_percentage' ? '0.1' : '0.01'}
                         value={displayValue}
                         onChange={(e) => handleChange(key, e.target.value)}
                         onFocus={() => setFocusedFields(prev => new Set(prev).add(key))}
@@ -464,8 +583,12 @@ export default function HFSInputModal({
               // Get default value configuration
               // Convert array to string for getDefaultValueConfig (it expects string | number | undefined)
               const configValue = isDeclaredField && isEmpty ? '' : (Array.isArray(rawValue) ? rawValue.join(', ') : rawValue);
+              // For numeric fields without a specific default, use 0 as default
+              const numericDefaultValue = !isTextArea && !isS8 && presumedZero && key !== 'density' ? 0 : undefined;
               const defaultConfig = getDefaultValueConfig({
                 value: configValue,
+                defaultValue: key === 'density' ? 1.0 : numericDefaultValue,
+                showDefaultAsItalic: presumedZero || key === 'density',
                 placeholder,
                 isFocused,
                 dict
@@ -547,6 +670,55 @@ export default function HFSInputModal({
                 </div>
               );
             })}
+                {/* Liquid fields - shown at the end when isLiquid is true */}
+                {isLiquid && v1LiquidFields.map(({ key, label, type }) => {
+                  const rawValue = getFieldValue(key);
+                  const presumedZero = isPresumedZero(key);
+                  const isFocused = focusedFields.has(key);
+                  const displayValue = presumedZero && !isFocused ? '' : String(rawValue || '');
+                  
+                  // Convert array to string for getDefaultValueConfig (it expects string | number | undefined)
+                  const configValue = Array.isArray(rawValue) ? rawValue.join(', ') : rawValue;
+                  const defaultConfig = getDefaultValueConfig({
+                    value: configValue,
+                    defaultValue: key === 'density' ? 1.0 : (presumedZero ? 0 : undefined),
+                    showDefaultAsItalic: presumedZero || key === 'density',
+                    placeholder: presumedZero ? '0' : (key === 'density' ? '1.0' : undefined),
+                    isFocused,
+                    dict
+                  });
+                  
+                  return (
+                    <div key={key} className="flex flex-col">
+                      <label className="text-xs font-medium text-text-main/80 mb-1 flex items-center gap-1.5">
+                        <span>{label}</span>
+                        {defaultConfig.showIcon && <DefaultValueIcon tooltipText={defaultConfig.tooltipText} />}
+                      </label>
+                      <input
+                        type={type}
+                        step="0.01"
+                        value={displayValue}
+                        onChange={(e) => handleChange(key, e.target.value)}
+                        onFocus={() => setFocusedFields(prev => new Set(prev).add(key))}
+                        onBlur={(e) => {
+                          // Round numeric values to 2 decimal places on blur
+                          const numValue = parseFloat(e.target.value);
+                          if (!isNaN(numValue)) {
+                            const rounded = Math.round(numValue * 100) / 100;
+                            handleChange(key, String(rounded));
+                          }
+                          setFocusedFields(prev => {
+                            const next = new Set(prev);
+                            next.delete(key);
+                            return next;
+                          });
+                        }}
+                        placeholder={defaultConfig.placeholder || '—'}
+                        className={`w-full px-3 py-2 bg-background border border-text-main/20 rounded-theme text-sm text-text-main focus:outline-none focus:border-primary ${getPlaceholderClasses(defaultConfig.showItalic)}`}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}

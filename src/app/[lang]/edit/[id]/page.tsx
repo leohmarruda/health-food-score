@@ -55,6 +55,7 @@ export default function EditFood() {
   const [density, setDensity] = useState<number | undefined>(undefined);
   const [selectedHfsVersion, setSelectedHfsVersion] = useState<string>('v2');
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
+  const [isLiquid, setIsLiquid] = useState<boolean | undefined>(undefined); // undefined = auto-detect, true/false = explicit
 
   // Data fetching
   const fetchLatestData = async () => {
@@ -97,6 +98,10 @@ export default function EditFood() {
 
       if (data) {
         initializeForm(data);
+        // Set isLiquid based on density_g_per_ml or category
+        const hasDensity = data.nutrition_parsed?.density_g_per_ml != null;
+        const isDrinkCategory = data.category === 'drink' || data.category === 'alcohol';
+        setIsLiquid(hasDensity || isDrinkCategory);
         // Set selected version based on hfs_score or default to v2
         if (data.hfs_score?.v1) {
           setSelectedHfsVersion('v1');
@@ -241,7 +246,19 @@ export default function EditFood() {
       if (selectedHfsVersion === 'v2') {
         // Check HFS input using modal data
         const { checkHFSInput } = await import('@/utils/hfs');
-        const updatedFormData = { ...formData, ...editedData };
+        const updatedFormData = { 
+          ...formData, 
+          ...editedData,
+          // Update isLiquid state based on editedData
+          abv_percentage: editedData.abv_percentage,
+          density: editedData.density
+        };
+        // Update isLiquid state if density or ABV changed
+        if (editedData.density != null || editedData.abv_percentage != null) {
+          setIsLiquid(true);
+        } else if (editedData.density === undefined && editedData.abv_percentage === undefined) {
+          setIsLiquid(false);
+        }
         const checkResult = checkHFSInput(updatedFormData, 'v2', dict);
         
         if (checkResult.warnings && checkResult.warnings.length > 0) {
@@ -249,6 +266,11 @@ export default function EditFood() {
             toast.warning(warning);
           });
         }
+        
+        // Update formData with edited values
+        Object.keys(editedData).forEach(key => {
+          updateField(key as keyof typeof formData, editedData[key]);
+        });
         
         const result = await saveFood(updatedFormData, undefined, 'v2');
         if (result?.scores) {
@@ -271,12 +293,31 @@ export default function EditFood() {
           // NOVA is required for v1 validation - use s7 from editedData if available, otherwise use formData.NOVA
           NOVA: editedData.s7 !== undefined ? editedData.s7 : formData.NOVA,
         };
+        // Update isLiquid state if density changed
+        if (editedData.density != null && editedData.density !== 1.0) {
+          setIsLiquid(true);
+        } else if (editedData.density === 1.0 || editedData.density === undefined) {
+          setIsLiquid(false);
+        }
         const checkResult = checkHFSInput(updatedFormData, 'v1', dict);
         
         if (checkResult.warnings && checkResult.warnings.length > 0) {
           checkResult.warnings.forEach(warning => {
             toast.warning(warning);
           });
+        }
+        
+        // Update formData with edited values
+        Object.keys(editedData).forEach(key => {
+          if (key === 's7') {
+            updateField('NOVA', editedData[key]);
+          } else if (key !== 'density') {
+            // Skip density for now, will update separately
+            updateField(key as keyof typeof formData, editedData[key]);
+          }
+        });
+        if (editedData.density !== undefined) {
+          updateField('density', editedData.density);
         }
         
         const { calculateHFSScores } = await import('@/utils/hfs-calculations');
@@ -369,6 +410,8 @@ export default function EditFood() {
               isLocked={isLocked}
               onToggleLock={toggleLock}
               onFieldError={reportFieldError}
+              isLiquid={isLiquid}
+              onLiquidChange={setIsLiquid}
             />
             <NutritionFactsSection
               formData={formData}
@@ -378,6 +421,7 @@ export default function EditFood() {
               isLocked={isLocked}
               onToggleLock={toggleLock}
               onFieldError={reportFieldError}
+              isLiquid={isLiquid}
             />
             <ExtraDataSection 
               formData={formData} 
@@ -512,10 +556,13 @@ export default function EditFood() {
           declared_processes: formData.declared_processes,
           declared_special_nutrients: formData.declared_special_nutrients,
           serving_size_value: formData.serving_size_value,
+          density: formData.density,
         }}
         servingSize={servingSize}
         servingUnit={servingUnit}
         density={density}
+        isLiquid={isLiquid}
+        onLiquidChange={setIsLiquid}
         onConfirm={handleHFSInputConfirm}
         onCancel={() => setShowHFSInputModal(false)}
         dict={dict}

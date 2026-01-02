@@ -7,7 +7,9 @@ import { preserveOtherVersions, extractNumericScore } from '@/utils/hfs-helpers'
 import { preserveOptionalFields } from '@/utils/sanitization';
 import type { FoodFormData } from '@/types/food';
 
-// Constants
+/**
+ * Numeric fields that need sanitization
+ */
 const NUMERIC_FIELDS: (keyof FoodFormData)[] = [
   'energy_kcal',
   'protein_g',
@@ -23,11 +25,22 @@ const NUMERIC_FIELDS: (keyof FoodFormData)[] = [
   'density'
 ];
 
+/**
+ * Custom hook for saving food data to the database.
+ * Handles HFS score calculation, data sanitization, and API communication.
+ * 
+ * @param foodId - Food item ID
+ * @param dict - Dictionary for localized messages
+ * @param onSuccess - Callback executed on successful save
+ * @returns Save function and saving state
+ */
 export function useSaveFood(foodId: string, dict: any, onSuccess?: () => void) {
   // State
   const [isSaving, setIsSaving] = useState(false);
 
-  // Functions
+  /**
+   * Saves food data and calculates HFS score
+   */
   const saveFood = async (formData: FoodFormData, hfsv1Score?: number, hfsVersion?: string) => {
     const validation = validateFormData(formData);
     if (!validation.valid) {

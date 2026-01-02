@@ -18,6 +18,7 @@ export default function NewFood() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [dict, setDict] = useState<any>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Constants
   const SLOTS = [
@@ -109,16 +110,24 @@ export default function NewFood() {
 
       // Redirect to edit page for review
       if (newFood?.id) {
+        setIsRedirecting(true);
+        setStatus(dict?.pages?.addFood?.statusRedirecting || 'Carregando editor...');
         router.push(`/${lang}/edit/${newFood.id}`);
         router.refresh();
+        // Don't reset loading state - let the redirect happen
+        return;
       } else {
+        setIsRedirecting(true);
+        setStatus(dict?.pages?.addFood?.statusRedirecting || 'Carregando editor...');
         router.push(`/${lang}/manage`);
+        // Don't reset loading state - let the redirect happen
+        return;
       }
 
     } catch (error: any) {
       console.error('Submission error:', error);
       toast.error(error.message || dict?.pages?.addFood?.uploadError || 'An unexpected error occurred');
-    } finally {
+      setIsRedirecting(false);
       setLoading(false);
       setStatus('');
     }
@@ -172,14 +181,18 @@ export default function NewFood() {
 
         <button 
           type="submit"
-          disabled={loading || !files.front || !files.nutrition}
+          disabled={loading || isRedirecting || !files.front || !files.nutrition}
           className="w-full bg-primary text-white py-4 rounded-theme font-bold hover:opacity-90 disabled:bg-text-main/20 disabled:text-text-main/50 disabled:cursor-not-allowed shadow-md transition relative flex items-center justify-center gap-2"
         >
-          {loading && (
+          {(loading || isRedirecting) && (
             <span className="animate-spin">⏳</span>
           )}
-          <span className={loading ? 'opacity-90' : ''}>
-            {loading ? (status || dict.pages?.addFood?.btnProcessing) : dict.pages?.addFood?.btnSave}
+          <span className={(loading || isRedirecting) ? 'opacity-90' : ''}>
+            {isRedirecting 
+              ? (status || dict.pages?.addFood?.statusRedirecting || 'Carregando editor...')
+              : loading 
+                ? (status || dict.pages?.addFood?.btnProcessing) 
+                : dict.pages?.addFood?.btnSave}
           </span>
         </button>
       </form>

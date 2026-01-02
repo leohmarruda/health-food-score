@@ -1,5 +1,12 @@
 import { useState, useCallback } from 'react';
 
+/**
+ * Custom hook for table row selection functionality.
+ * 
+ * @param items - Array of items to select from
+ * @param getId - Function to extract unique ID from item
+ * @returns Selection state and handlers
+ */
 export function useTableSelection<T>(
   items: T[],
   getId: (item: T) => string

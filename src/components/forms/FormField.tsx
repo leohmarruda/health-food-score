@@ -1,6 +1,9 @@
 import type { FoodFormData } from '@/types/food';
 import { getDefaultValueConfig, DefaultValueIcon, getPlaceholderClasses } from '@/utils/field-helpers';
 
+/**
+ * Props for FormField component
+ */
 interface FormFieldProps {
   label: string;
   name: keyof FoodFormData;
@@ -18,6 +21,13 @@ interface FormFieldProps {
   dict?: any;
 }
 
+/**
+ * Generic form field component with lock/unlock functionality and error display.
+ * Supports text and number input types with validation.
+ * 
+ * @param props - Component props
+ * @returns Form input field
+ */
 export default function FormField({
   label,
   name,

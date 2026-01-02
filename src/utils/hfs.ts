@@ -1,10 +1,20 @@
 import { FoodFormData } from '@/types/food';
 
+/**
+ * Response interface for HFS input validation
+ */
 interface CheckHFSInputResponse {
   success: boolean;
   warnings?: string[];
 }
 
+/**
+ * Validates HFS input data based on version requirements
+ * @param formData - Form data to validate
+ * @param version - HFS version ('v1' or 'v2')
+ * @param dict - Dictionary for localized messages
+ * @returns Validation result with success status and warnings
+ */
 export function checkHFSInput(formData: FoodFormData, version: string = 'v2', dict?: any): CheckHFSInputResponse {
   const t = dict?.hfs || {};
   let success = true;
@@ -36,31 +46,35 @@ export function checkHFSInput(formData: FoodFormData, version: string = 'v2', di
   };
 }
 
+/**
+ * HFS calculation response interface
+ */
 interface HFSResponse {
-    success: boolean;
-    hfs_score: number;
-    hfs_version: string;
-    confidence: number;
-    reasoning?: string;
-    error?: string;
-    scores?: {
-      s1a?: number; // Açúcares adicionados (g)
-      s1b?: number; // Açúcares naturais (g)
-      s2?: number; // Fibras (g)
-      s3a?: number; // Gordura Saturada (g)
-      s3b?: number; // Gordura Trans (g)
-      s4?: number; // Densidade calórica (kcal)
-      s5?: number; // Proteína (g)
-      s6?: number; // Sódio (mg)
-      s7?: number; // Grau de processamento (NOVA)
-      s8?: number; // Aditivos artificiais (lista)
-    };
-  }
+  success: boolean;
+  hfs_score: number;
+  hfs_version: string;
+  confidence: number;
+  reasoning?: string;
+  error?: string;
+  scores?: {
+    s1a?: number; // Added sugars (g)
+    s1b?: number; // Natural sugars (g)
+    s2?: number; // Fiber (g)
+    s3a?: number; // Saturated fat (g)
+    s3b?: number; // Trans fat (g)
+    s4?: number; // Energy density (kcal)
+    s5?: number; // Protein (g)
+    s6?: number; // Sodium (mg)
+    s7?: number; // Processing degree (NOVA)
+    s8?: number; // Artificial additives (count)
+  };
+}
 
 /**
- * Counts unique additives detected in ingredients list using regex patterns from additive_rules
- * Each ingredient is checked individually against all regex patterns
- * @param ingredientsList Array of ingredient strings
+ * Counts unique additives detected in ingredients list using regex patterns from additive_rules table.
+ * Each ingredient is checked individually against all regex patterns.
+ * 
+ * @param ingredientsList - Array of ingredient strings to check
  * @returns Number of unique additives detected (without double counting)
  */
 async function countAdditives(ingredientsList: string[]): Promise<number> {
@@ -125,7 +139,14 @@ async function countAdditives(ingredientsList: string[]): Promise<number> {
   }
 }
 
-// Prepare initial scores for modal (without calculating final HFS)
+/**
+ * Prepares initial scores for HFS input modal (without calculating final HFS).
+ * Converts nutritional values from serving size to 100g standard.
+ * 
+ * @param formData - Form data containing nutritional information
+ * @param version - HFS version ('v1' or 'v2'), defaults to 'v1'
+ * @returns Prepared scores, serving size, unit, and density
+ */
 export async function prepareInitialScores(formData: FoodFormData, version: string = 'v1'): Promise<{
   scores?: any;
   servingSize?: number;
@@ -202,10 +223,16 @@ export async function prepareInitialScores(formData: FoodFormData, version: stri
   };
 }
 
+/**
+ * Calculates HFS score from form data.
+ * Currently uses local calculation (API call is disabled).
+ * 
+ * @param formData - Form data containing nutritional information
+ * @param version - HFS version ('v1' or 'v2'), defaults to 'v2'
+ * @param dict - Dictionary for localized messages
+ * @returns HFS calculation response with scores
+ */
 export async function calculateHFS(formData: FoodFormData, version: string = 'v2', dict?: any): Promise<HFSResponse> {
-  // Bypass API call - return default score
-  // TODO: Re-enable API call when ready
-  // Version parameter will be used when API is re-enabled
   const t = dict?.hfs || {};
   
   // Calculate conversion factor: 100g / serving_size_value
